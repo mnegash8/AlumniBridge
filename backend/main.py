@@ -230,6 +230,71 @@ def download_sample_resume(filename: str):
         raise HTTPException(status_code=404, detail="Sample resume not found")
     return FileResponse(file_path, media_type="application/pdf", filename=filename)
 
+class OAuthRequest(BaseModel):
+    provider: str # "google" | "github" | "university_sso"
+    email: Optional[str] = "student@gsu.edu"
+    name: Optional[str] = "Student User"
+    school: Optional[str] = "Georgia State University"
+    avatar: Optional[str] = None
+    role: Optional[str] = "student"
+
+class EmailAuthRequest(BaseModel):
+    email: str
+    password: str
+    name: Optional[str] = None
+    school: Optional[str] = "Georgia State University"
+    role: Optional[str] = "student"
+
+@app.post("/api/auth/oauth")
+def oauth_authenticate(payload: OAuthRequest):
+    """
+    Simulates OAuth 2.0 authentication flow with provider (Google / GitHub / University SSO).
+    Returns verified token, user identity, and granted scopes.
+    """
+    user_id = f"usr_{uuid.uuid4().hex[:8]}"
+    avatar = payload.avatar or f"https://ui-avatars.com/api/?name={payload.name.replace(' ', '+')}&background=6366f1&color=fff&size=128"
+    
+    user_data = {
+        "id": user_id,
+        "name": payload.name,
+        "email": payload.email,
+        "school": payload.school or "Georgia State University",
+        "role": payload.role or "student",
+        "avatar": avatar,
+        "auth_provider": payload.provider,
+        "verified_student": True
+    }
+    
+    # OAuth 2.0 access token (Bearer)
+    token = f"ab_oauth2_{uuid.uuid4().hex}"
+    
+    return {
+        "access_token": token,
+        "token_type": "Bearer",
+        "expires_in": 3600 * 24 * 7, # 7 days
+        "scopes": ["openid", "profile", "email", "university_affiliation"],
+        "user": user_data
+    }
+
+@app.post("/api/auth/login")
+def email_login(payload: EmailAuthRequest):
+    name = payload.name or payload.email.split("@")[0].capitalize()
+    return oauth_authenticate(OAuthRequest(
+        provider="email",
+        email=payload.email,
+        name=name,
+        school=payload.school or "Georgia State University"
+    ))
+
+@app.post("/api/auth/signup")
+def email_signup(payload: EmailAuthRequest):
+    return oauth_authenticate(OAuthRequest(
+        provider="email",
+        email=payload.email,
+        name=payload.name or payload.email.split("@")[0].capitalize(),
+        school=payload.school or "Georgia State University"
+    ))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

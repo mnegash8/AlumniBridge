@@ -1,7 +1,15 @@
 import React from 'react';
-import { GraduationCap, Users, Calendar, Sparkles, Award } from 'lucide-react';
+import { GraduationCap, Users, Calendar, Sparkles, Award, LogIn, LogOut, User } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab, bookingsCount, onOpenJudgeModal }) {
+export default function Navbar({
+  activeTab,
+  setActiveTab,
+  bookingsCount,
+  onOpenJudgeModal,
+  currentUser,
+  onOpenAuthModal,
+  onLogout
+}) {
   return (
     <header className="navbar">
       <div className="nav-inner">
@@ -62,6 +70,47 @@ export default function Navbar({ activeTab, setActiveTab, bookingsCount, onOpenJ
         </nav>
 
         <div className="nav-actions">
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img
+                  src={currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff`}
+                  alt={currentUser.name}
+                  style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid var(--border-glow)' }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', lineHeight: 1.2 }}>
+                    {currentUser.name}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: '#38bdf8' }}>
+                    {currentUser.school || 'GSU'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                id="btn-logout"
+                className="btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '0.78rem' }}
+                onClick={onLogout}
+                title="Log Out"
+              >
+                <LogOut size={13} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              id="btn-login-open"
+              className="btn-primary"
+              style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+              onClick={onOpenAuthModal}
+            >
+              <LogIn size={15} />
+              <span>Log In (OAuth 2.0)</span>
+            </button>
+          )}
+
           <button
             id="judge-pitch-btn"
             className="btn-secondary"
@@ -69,7 +118,7 @@ export default function Navbar({ activeTab, setActiveTab, bookingsCount, onOpenJ
             onClick={onOpenJudgeModal}
           >
             <Award size={16} color="#818cf8" />
-            <span>Judge Demo & Pitch</span>
+            <span>Judge Pitch</span>
           </button>
         </div>
       </div>

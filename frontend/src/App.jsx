@@ -6,6 +6,7 @@ import MentorList from './components/MentorList';
 import BookingModal from './components/BookingModal';
 import BookingsView from './components/BookingsView';
 import JudgeModal from './components/JudgeModal';
+import AuthModal from './components/AuthModal';
 import { Sparkles, CheckCircle2, ChevronRight, GraduationCap } from 'lucide-react';
 import './App.css';
 
@@ -15,6 +16,17 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('match'); // 'match' | 'explore' | 'bookings'
   const [currentStep, setCurrentStep] = useState(1); // 1: Upload, 2: Review, 3: Recommendations
   
+  // Auth state
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ab_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   const [allMentors, setAllMentors] = useState([]);
   const [rankedMatches, setRankedMatches] = useState([]);
   const [studentProfile, setStudentProfile] = useState(null);
@@ -105,6 +117,34 @@ export default function App() {
     }
   };
 
+  // Auth Handlers
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    if (!studentProfile) {
+      setStudentProfile({
+        name: user.name,
+        school: user.school || "Georgia State University",
+        major: "Computer Science",
+        year_standing: "Sophomore",
+        grad_year: 2027,
+        target_role: "Software Engineering Intern",
+        goals: "Connect with alumni mentors from my university for resume roasts and technical interview preparation.",
+        max_budget: 0,
+        challenges: [
+          "Commuter student balancing work and campus recruitment",
+          "First-generation college student with no industry connections"
+        ],
+        skills: ["Python", "Java", "Problem Solving", "Git"]
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('ab_token');
+    localStorage.removeItem('ab_user');
+    setCurrentUser(null);
+  };
+
   // Handle Booking Success
   const handleBookingSuccess = (newBooking) => {
     setBookings((prev) => [newBooking, ...prev]);
@@ -120,6 +160,9 @@ export default function App() {
         }}
         bookingsCount={bookings.length}
         onOpenJudgeModal={() => setIsJudgeModalOpen(true)}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Stepper Bar (Only in Match flow) */}
@@ -252,6 +295,13 @@ export default function App() {
         isOpen={isJudgeModalOpen}
         onClose={() => setIsJudgeModalOpen(false)}
         onSelectPreset={handleSelectPreset}
+      />
+
+      {/* OAuth 2.0 Login & Signup Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
       />
     </div>
   );
