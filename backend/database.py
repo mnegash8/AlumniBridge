@@ -1,6 +1,8 @@
 import sqlite3
 import json
 import os
+import hashlib
+import secrets
 from typing import List, Dict, Any, Optional
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "alumnibridge.db")
@@ -589,6 +591,42 @@ def init_db(force_reseed: bool = True):
     )
     """)
     
+    # Users table for genuine account authentication
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        name TEXT NOT NULL,
+        email TEXT,
+        school TEXT DEFAULT 'Georgia State University',
+        role TEXT DEFAULT 'student',
+        avatar TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+    
+    # Pre-seed default user account 'mnegash' if not exists
+    cursor.execute("SELECT id FROM users WHERE username = 'mnegash'")
+    if not cursor.fetchone():
+        demo_salt = secrets.token_hex(16)
+        demo_hash = hashlib.sha256(("password123" + demo_salt).encode('utf-8')).hexdigest()
+        cursor.execute("""
+        INSERT INTO users (id, username, password_hash, salt, name, email, school, role, avatar)
+        VALUES ('usr_mnegash', 'mnegash', ?, ?, 'Mohammed Negash', 'mnegash.edu@gmail.com', 'Georgia State University', 'student', 'https://ui-avatars.com/api/?name=Mohammed+Negash&background=6366f1&color=fff&size=128')
+        """, (demo_hash, demo_salt))
+
+    # Pre-seed demo user account 'demarcus' if not exists
+    cursor.execute("SELECT id FROM users WHERE username = 'demarcus'")
+    if not cursor.fetchone():
+        demo_salt2 = secrets.token_hex(16)
+        demo_hash2 = hashlib.sha256(("password123" + demo_salt2).encode('utf-8')).hexdigest()
+        cursor.execute("""
+        INSERT INTO users (id, username, password_hash, salt, name, email, school, role, avatar)
+        VALUES ('usr_demarcus', 'demarcus', ?, ?, 'DeMarcus Cole', 'dcole12@gmail.com', 'Georgia State University', 'student', 'https://ui-avatars.com/api/?name=DeMarcus+Cole&background=10b981&color=fff&size=128')
+        """, (demo_hash2, demo_salt2))
+    
     # Re-seed mentors to apply updates
     if force_reseed:
         cursor.execute("DELETE FROM mentors")
@@ -749,3 +787,80 @@ def get_all_bookings() -> List[Dict[str, Any]]:
         })
     conn.close()
     return bookings
+
+def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
+    if not salt:
+        salt = secrets.token_hex(16)
+    hashed = hashlib.sha256((password + salt).encode('utf-8')).hexdigest()
+    return hashed, salt
+
+def verify_password(password: str, password_hash: str, salt: str) -> bool:
+    expected_hash, _ = hash_password(password, salt)
+    return secrets.compare_digest(expected_hash, password_hash)
+
+def create_user(username: str, password: str, name: str, email: Optional[str] = None, school: str = "Georgia State University") -> Dict[str, Any]:
+    username = username.strip().lower()
+    if not username:
+        raise ValueError("Username cannot be empty.")
+    if len(password) < 6:
+        raise ValueError("Password must be at least 6 characters.")
+        
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Check if username or email already exists
+    cursor.execute("SELECT id FROM users WHERE username = ? OR email = ?", (username, email or username))
+    if cursor.fetchone():
+        conn.close()
+        raise ValueError("An account with that username already exists. Please log in.")
+        
+    pwd_hash, salt = hash_password(password)
+    user_id = f"usr_{secrets.token_hex(6)}"
+    avatar = f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=6366f1&color=fff&size=128"
+    user_email = email or f"{username}@gmail.com"
+    
+    cursor.execute("""
+    INSERT INTO users (id, username, password_hash, salt, name, email, school, role, avatar)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'student', ?)
+    """, (user_id, username, pwd_hash, salt, name, user_email, school, avatar))
+    
+    conn.commit()
+    conn.close()
+    
+    return {
+        "id": user_id,
+        "username": username,
+        "name": name,
+        "email": user_email,
+        "school": school,
+        "role": "student",
+        "avatar": avatar,
+        "verified_student": True
+    }
+
+def authenticate_user(username: str, password: str) -> Dict[str, Any]:
+    username = username.strip().lower()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (username, username))
+    user = cursor.fetchone()
+    conn.close()
+    
+    if not user:
+        raise ValueError("Account does not exist. Please create an account first.")
+        
+    if not verify_password(password, user["password_hash"], user["salt"]):
+        raise ValueError("Incorrect password. Please try again.")
+        
+    return {
+        "id": user["id"],
+        "username": user["username"],
+        "name": user["name"],
+        "email": user["email"],
+        "school": user["school"],
+        "role": user["role"],
+        "avatar": user["avatar"],
+        "verified_student": True
+    }

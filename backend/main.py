@@ -11,7 +11,15 @@ from pydantic import BaseModel
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
-from database import init_db, get_all_mentors, get_mentor_by_id, create_booking, get_all_bookings
+from database import (
+    init_db,
+    get_all_mentors,
+    get_mentor_by_id,
+    create_booking,
+    get_all_bookings,
+    create_user,
+    authenticate_user
+)
 from matching import rank_mentors_for_student, compute_mentor_match
 from resume_parser import (
     extract_text_from_pdf_bytes,
@@ -312,7 +320,8 @@ def google_auth_verify(payload: GoogleAuthRequest):
     }
 
 class EmailAuthRequest(BaseModel):
-    email: str
+    username: Optional[str] = None
+    email: Optional[str] = None
     password: str
     name: Optional[str] = None
     school: Optional[str] = "Georgia State University"
@@ -350,23 +359,65 @@ def oauth_authenticate(payload: OAuthRequest):
     }
 
 @app.post("/api/auth/login")
-def email_login(payload: EmailAuthRequest):
-    name = payload.name or payload.email.split("@")[0].capitalize()
-    return oauth_authenticate(OAuthRequest(
-        provider="email",
-        email=payload.email,
-        name=name,
-        school=payload.school or "Georgia State University"
-    ))
+def real_database_login(payload: EmailAuthRequest):
+    """
+    Genuine database authentication:
+    - Queries SQLite for the username/email.
+    - If user not found: raises 401 'Account does not exist. Please create an account first.'
+    - If password mismatch: raises 401 'Incorrect password. Please try again.'
+    - If match: returns verified session token and user profile.
+    """
+    identifier = (payload.username or payload.email or "").strip()
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Please enter your username.")
+    if not payload.password:
+        raise HTTPException(status_code=400, detail="Please enter your password.")
+
+    try:
+        user_data = authenticate_user(identifier, payload.password)
+        token = f"ab_auth_{uuid.uuid4().hex}"
+        return {
+            "access_token": token,
+            "token_type": "Bearer",
+            "expires_in": 3600 * 24 * 7,
+            "user": user_data
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 @app.post("/api/auth/signup")
-def email_signup(payload: EmailAuthRequest):
-    return oauth_authenticate(OAuthRequest(
-        provider="email",
-        email=payload.email,
-        name=payload.name or payload.email.split("@")[0].capitalize(),
-        school=payload.school or "Georgia State University"
-    ))
+def real_database_signup(payload: EmailAuthRequest):
+    """
+    Genuine database user registration:
+    - Checks if username or email already exists in SQLite.
+    - Hashes password with cryptographic salt.
+    - Stores persistent user record in database.
+    """
+    identifier = (payload.username or payload.email or "").strip()
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Please enter a username.")
+    if not payload.password or len(payload.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+    
+    display_name = payload.name or identifier.split("@")[0].replace(".", " ").title()
+
+    try:
+        user_data = create_user(
+            username=identifier,
+            password=payload.password,
+            name=display_name,
+            email=payload.email or (identifier if "@" in identifier else f"{identifier}@gmail.com"),
+            school=payload.school or "Georgia State University"
+        )
+        token = f"ab_auth_{uuid.uuid4().hex}"
+        return {
+            "access_token": token,
+            "token_type": "Bearer",
+            "expires_in": 3600 * 24 * 7,
+            "user": user_data
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
