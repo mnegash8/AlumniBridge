@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video } from 'lucide-react';
+import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
 export default function BookingsView({ bookings = [], onFindMentors }) {
   const [copiedQuestion, setCopiedQuestion] = useState(null);
@@ -102,6 +103,84 @@ export default function BookingsView({ bookings = [], onFindMentors }) {
               <span><strong>Email:</strong> {b.student_email}</span>
               <span>•</span>
               <span><strong>School:</strong> {b.student_school}</span>
+            </div>
+
+            {/* Quick Calendar & Room Action Bar */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              flexWrap: 'wrap',
+              marginBottom: '14px'
+            }}>
+              <a
+                href={generateGoogleCalendarUrl({
+                  mentorName: b.mentor_name,
+                  serviceTitle: b.service_title,
+                  sessionDate: b.session_date,
+                  sessionTime: b.session_time,
+                  prepQuestions: b.prep_questions,
+                  bookingId: b.id
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: '#38bdf8',
+                  borderColor: 'rgba(56, 189, 248, 0.3)',
+                  textDecoration: 'none'
+                }}
+              >
+                <ExternalLink size={13} />
+                <span>Google Calendar</span>
+              </a>
+
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+                onClick={() => downloadIcsFile({
+                  mentorName: b.mentor_name,
+                  serviceTitle: b.service_title,
+                  sessionDate: b.session_date,
+                  sessionTime: b.session_time,
+                  prepQuestions: b.prep_questions,
+                  bookingId: b.id
+                })}
+              >
+                <Download size={13} />
+                <span>Download .ics</span>
+              </button>
+
+              <a
+                href="https://meet.google.com/ab-mentorship"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-emerald"
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '0.8rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  textDecoration: 'none',
+                  marginLeft: 'auto'
+                }}
+              >
+                <Video size={13} />
+                <span>Join Virtual Room</span>
+              </a>
             </div>
 
             {/* AI Session Prep Questions for this booking */}

@@ -10,8 +10,11 @@ import {
   Copy,
   Check,
   Award,
-  ArrowRight
+  ArrowRight,
+  Download,
+  ExternalLink
 } from 'lucide-react';
+import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
 export default function BookingModal({
   mentorData,
@@ -357,7 +360,81 @@ export default function BookingModal({
               </div>
             </div>
 
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            {/* Sync to Calendar Section */}
+            <div style={{
+              marginTop: '18px',
+              padding: '16px 20px',
+              background: 'rgba(99, 102, 241, 0.08)',
+              border: '1px solid rgba(99, 102, 241, 0.25)',
+              borderRadius: '12px',
+              textAlign: 'left'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>
+                  <Calendar size={18} color="#818cf8" />
+                  <span>Add to Your Calendar</span>
+                </div>
+                <span style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 600 }}>
+                  Includes Google Meet Link
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <a
+                  href={generateGoogleCalendarUrl({
+                    mentorName: mentor.name,
+                    mentorCompany: mentor.company,
+                    serviceTitle: bookingConfirmed.service?.title,
+                    sessionDate: bookingConfirmed.booking?.session_date,
+                    sessionTime: bookingConfirmed.booking?.session_time,
+                    prepQuestions: bookingConfirmed.booking?.prep_questions,
+                    bookingId: bookingConfirmed.booking?.id
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                  style={{
+                    padding: '10px 14px',
+                    fontSize: '0.84rem',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <ExternalLink size={15} />
+                  <span>Google Calendar</span>
+                </a>
+
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{
+                    padding: '10px 14px',
+                    fontSize: '0.84rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                  onClick={() => downloadIcsFile({
+                    mentorName: mentor.name,
+                    mentorCompany: mentor.company,
+                    serviceTitle: bookingConfirmed.service?.title,
+                    sessionDate: bookingConfirmed.booking?.session_date,
+                    sessionTime: bookingConfirmed.booking?.session_time,
+                    prepQuestions: bookingConfirmed.booking?.prep_questions,
+                    bookingId: bookingConfirmed.booking?.id
+                  })}
+                >
+                  <Download size={15} />
+                  <span>Download .ics</span>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '22px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
               <button className="btn-primary" onClick={onClose}>
                 Done & View Mentors
               </button>
