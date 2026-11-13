@@ -33,7 +33,7 @@ export default function BookingModal({
   const [selectedSlot, setSelectedSlot] = useState(slots[0] || null);
   const [studentNotes, setStudentNotes] = useState('');
   const [studentEmail, setStudentEmail] = useState(
-    `${(studentProfile?.name || 'student').toLowerCase().replace(/\s+/g, '.')}@${(studentProfile?.school || 'gsu').toLowerCase().replace(/\s+/g, '')}.edu`
+    studentProfile?.email || (studentProfile?.name ? `${studentProfile.name.toLowerCase().replace(/\s+/g, '.')}@gmail.com` : 'student@gmail.com')
   );
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -203,7 +203,7 @@ export default function BookingModal({
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Student School Email</label>
+                <label className="form-label">Student Email</label>
                 <input
                   type="email"
                   className="form-input"
