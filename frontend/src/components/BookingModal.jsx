@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -43,6 +43,22 @@ export default function BookingModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
+
+  // Reset modal state whenever opened for a mentor
+  useEffect(() => {
+    if (isOpen) {
+      setBookingConfirmed(null);
+      setIsSubmitting(false);
+      setSelectedService(services[0] || null);
+      setSelectedSlot(slots[0] || null);
+      setStudentNotes('');
+    }
+  }, [isOpen, mentor?.id]);
+
+  const handleModalClose = () => {
+    setBookingConfirmed(null);
+    onClose();
+  };
 
   const handleConfirmBooking = async () => {
     if (!selectedService || !selectedSlot) return;
@@ -96,9 +112,9 @@ export default function BookingModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleModalClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>
+        <button className="modal-close-btn" onClick={handleModalClose}>
           <X size={20} />
         </button>
 
@@ -444,7 +460,7 @@ export default function BookingModal({
             </div>
 
             <div style={{ marginTop: '22px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
-              <button className="btn-primary" onClick={onClose}>
+              <button className="btn-primary" onClick={handleModalClose}>
                 Done & View Mentors
               </button>
             </div>
