@@ -217,7 +217,7 @@ export default function MentorList({
                 {/* Empathy / Challenge Overcome Box */}
                 {mentor.challenges_overcome && mentor.challenges_overcome.length > 0 && (
                   <div className="mentor-challenge-box" style={{ marginTop: '12px' }}>
-                    <div className="mentor-challenge-label">💡 Obstacle They Overcame:</div>
+                    <div className="mentor-challenge-label">Obstacle They Overcame:</div>
                     <div>"{mentor.challenges_overcome[0]}"</div>
                   </div>
                 )}

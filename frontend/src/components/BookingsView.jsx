@@ -134,7 +134,7 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                       alignItems: 'center',
                       gap: '4px'
                     }}>
-                      <Zap size={11} /> ⚡ No-Schedule Async
+                      <Zap size={11} /> No-Schedule Async
                     </span>
                   ) : (
                     <span className="badge badge-match">
@@ -279,7 +279,7 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                     borderRadius: '8px',
                     borderLeft: '3px solid #38bdf8'
                   }}>
-                    💬 <strong>Mentor Advice:</strong> “{b.async_feedback?.coach_summary || 'Reviewed your resume bullets. Solid technical foundation, but your quantified impact needs to follow the Google X-Y-Z formula to pass ATS screens.'}”
+                    <strong>Mentor Advice:</strong> “{b.async_feedback?.coach_summary || 'Reviewed your resume bullets. Solid technical foundation, but your quantified impact needs to follow the Google X-Y-Z formula to pass ATS screens.'}”
                   </p>
                 </div>
 
@@ -309,16 +309,16 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                           }}
                         >
                           <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '6px' }}>
-                            📌 {rw.section}
+                            {rw.section}
                           </div>
                           <div style={{ fontSize: '0.82rem', color: '#f87171', marginBottom: '4px', textDecoration: 'line-through' }}>
-                            ❌ {rw.original}
+                            <span style={{ fontWeight: 600 }}>Original:</span> {rw.original}
                           </div>
                           <div style={{ fontSize: '0.85rem', color: '#4ade80', fontWeight: 600, marginBottom: '6px' }}>
-                            ✅ {rw.suggestion}
+                            <span style={{ fontWeight: 600 }}>Suggested:</span> {rw.suggestion}
                           </div>
                           <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontStyle: 'italic' }}>
-                            💡 <strong>Mentor Tip:</strong> {rw.mentor_tip}
+                            <strong>Mentor Tip:</strong> {rw.mentor_tip}
                           </div>
                         </div>
                       ))}

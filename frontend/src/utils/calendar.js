@@ -95,7 +95,7 @@ export function generateGoogleCalendarUrl({
 
   const title = `AlumniBridge: ${serviceTitle} with ${mentorName} ${mentorCompany ? `(${mentorCompany})` : ''}`.trim();
 
-  let details = `🎓 AlumniBridge 1-on-1 Mentorship Session (100% Free)\n\n`;
+  let details = `AlumniBridge 1-on-1 Mentorship Session (100% Free)\n\n`;
   details += `• Alumni Mentor: ${mentorName} ${mentorCompany ? `at ${mentorCompany}` : ''}\n`;
   details += `• Topic/Service: ${serviceTitle}\n`;
   details += `• Booking Reference: ${bookingId}\n`;
@@ -103,14 +103,14 @@ export function generateGoogleCalendarUrl({
 
   if (sessionFocus) {
     if (sessionFocus.key_focus_areas && sessionFocus.key_focus_areas.length > 0) {
-      details += `🎯 WHAT TO TALK ABOUT & FOCUS ON:\n`;
+      details += `WHAT TO TALK ABOUT & FOCUS ON:\n`;
       sessionFocus.key_focus_areas.forEach((fa) => {
         details += `• ${fa}\n`;
       });
       details += `\n`;
     }
     if (sessionFocus.discussion_agenda && sessionFocus.discussion_agenda.length > 0) {
-      details += `⏱️ SUGGESTED AGENDA:\n`;
+      details += `SUGGESTED AGENDA:\n`;
       sessionFocus.discussion_agenda.forEach((step) => {
         details += `• ${step.phase} - ${step.title}: ${step.focus}\n`;
       });
@@ -119,7 +119,7 @@ export function generateGoogleCalendarUrl({
   }
 
   if (prepQuestions && prepQuestions.length > 0) {
-    details += `📋 AI Recommended Questions for this Call:\n`;
+    details += `Recommended Questions for this Call:\n`;
     prepQuestions.forEach((q, i) => {
       details += `${i + 1}. ${q}\n`;
     });

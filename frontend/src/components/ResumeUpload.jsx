@@ -185,7 +185,7 @@ export default function ResumeUpload({ onProfileParsed, onSelectPreset, presets 
         {/* 1-Click Demo Profiles Section */}
         <div className="presets-section">
           <div className="presets-label">
-            ⚡ 1-Click Demo Student Profiles (Including Georgia State University)
+            1-Click Demo Student Profiles (Including Georgia State University)
           </div>
           <div className="presets-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             {/* Georgia State University Preset */}

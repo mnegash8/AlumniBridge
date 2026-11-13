@@ -204,7 +204,7 @@ export default function BookingModal({
                 }}
               >
                 <Zap size={15} color={sessionFormat === 'ASYNC_REVIEW' ? '#38bdf8' : 'currentColor'} />
-                <span>⚡ No-Schedule Review</span>
+                <span>No-Schedule Review</span>
               </button>
             </div>
 
@@ -237,7 +237,7 @@ export default function BookingModal({
                           </span>
                         </div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                          ⏱️ {srv.duration}
+                          {srv.duration}
                         </div>
                         <p style={{ fontSize: '0.82rem', color: '#cbd5e1', marginTop: '8px', lineHeight: '1.4' }}>
                           {srv.description}
@@ -251,7 +251,7 @@ export default function BookingModal({
                         fontSize: '0.75rem',
                         color: '#6ee7b7'
                       }}>
-                        📦 <strong>Deliverable:</strong> {srv.deliverable}
+                        <strong>Deliverable:</strong> {srv.deliverable}
                       </div>
                     </div>
                   );
@@ -275,7 +275,7 @@ export default function BookingModal({
                         className={`slot-btn ${isSelected ? 'selected' : ''}`}
                         onClick={() => setSelectedSlot(s)}
                       >
-                        <div>📅 {s.date}</div>
+                        <div>{s.date}</div>
                         <div style={{ marginTop: '2px', fontWeight: 700 }}>{s.time}</div>
                       </button>
                     );
@@ -304,8 +304,8 @@ export default function BookingModal({
                   fontSize: '0.78rem',
                   color: '#94a3b8'
                 }}>
-                  <span>⏱️ <strong>Turnaround:</strong> Within 48 hours</span>
-                  <span>🎧 <strong>Deliverable:</strong> Voice Note + Annotated Rewrites</span>
+                  <span><strong>Turnaround:</strong> Within 48 hours</span>
+                  <span><strong>Deliverable:</strong> Voice Note + Annotated Rewrites</span>
                 </div>
               </div>
             )}
