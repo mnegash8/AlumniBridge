@@ -5,9 +5,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   if (!isOpen) return null;
 
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
-  const [username, setUsername] = useState('mnegash');
-  const [password, setPassword] = useState('password123');
-  const [name, setName] = useState('Mohammed Negash');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [school, setSchool] = useState('Georgia State University');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,37 +55,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     }
   };
 
-  const handleDemoPreset = async (demoUsername, demoPassword) => {
-    setUsername(demoUsername);
-    setPassword(demoPassword);
-    setErrorMsg('');
-    setSuccessMsg('');
-    setIsSubmitting(true);
-
-    try {
-      const res = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: demoUsername,
-          password: demoPassword
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Demo login failed');
-
-      localStorage.setItem('ab_token', data.access_token);
-      localStorage.setItem('ab_user', JSON.stringify(data.user));
-
-      onAuthSuccess(data.user);
-      onClose();
-    } catch (err) {
-      setErrorMsg(err.message || 'Demo login failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -296,94 +265,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           </button>
         </form>
 
-        {/* 1-Click Demo Accounts in Database */}
-        <div style={{
-          marginTop: '22px',
-          paddingTop: '16px',
-          borderTop: '1px solid var(--border-subtle)'
-        }}>
-          <div style={{
-            fontSize: '0.74rem',
-            color: 'var(--text-dim)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginBottom: '10px',
-            textAlign: 'center'
-          }}>
-            Registered Demo Accounts (Pre-seeded in DB)
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '0.82rem',
-                justifyContent: 'space-between',
-                background: 'rgba(255, 255, 255, 0.03)'
-              }}
-              onClick={() => handleDemoPreset('mnegash', 'password123')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '22px',
-                  height: '22px',
-                  borderRadius: '50%',
-                  background: 'var(--primary)',
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.72rem',
-                  fontWeight: 700
-                }}>
-                  M
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <span style={{ fontWeight: 600, color: '#f8fafc' }}>mnegash</span>
-                  <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>(Mohammed Negash)</span>
-                </div>
-              </div>
-              <span style={{ color: '#38bdf8', fontSize: '0.75rem' }}>Log In</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                fontSize: '0.82rem',
-                justifyContent: 'space-between',
-                background: 'rgba(255, 255, 255, 0.03)'
-              }}
-              onClick={() => handleDemoPreset('demarcus', 'password123')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '22px',
-                  height: '22px',
-                  borderRadius: '50%',
-                  background: '#10b981',
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.72rem',
-                  fontWeight: 700
-                }}>
-                  D
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <span style={{ fontWeight: 600, color: '#f8fafc' }}>demarcus</span>
-                  <span style={{ color: 'var(--text-muted)', marginLeft: '6px' }}>(DeMarcus Cole)</span>
-                </div>
-              </div>
-              <span style={{ color: '#38bdf8', fontSize: '0.75rem' }}>Log In</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
