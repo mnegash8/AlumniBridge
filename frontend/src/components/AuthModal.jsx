@@ -439,6 +439,33 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 />
               </div>
 
+              {/* 1-Click Local Demo Fallback (for testing before Google Cloud Console Client ID is set) */}
+              <button
+                type="button"
+                id="btn-google-demo"
+                className="btn-secondary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  padding: '8px 14px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  fontSize: '0.8rem',
+                  color: '#94a3b8'
+                }}
+                onClick={() => {
+                  const payload = btoa(JSON.stringify({
+                    sub: "demo_12345",
+                    email: "mnegash.edu@gmail.com",
+                    name: "Mohammed Negash",
+                    picture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80"
+                  }));
+                  handleGoogleSuccess({ credential: `eyJhbGciOiJSUzI1NiJ9.${payload}.demo_signature` });
+                }}
+              >
+                <span>Demo Bypass: <strong>Mohammed Negash</strong> (mnegash.edu@gmail.com)</span>
+              </button>
+
               {/* University SSO */}
               <button
                 id="btn-oauth-sso"
