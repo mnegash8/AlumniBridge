@@ -4,8 +4,11 @@ import { Sparkles, GraduationCap, Building2, Star, CheckCircle, Search, Gift, Ar
 export default function MentorList({
   matches = [],
   studentProfile = null,
+  isBrowseMode = false,
+  hasMatches = false,
   onSelectMentor,
-  onEditProfile
+  onEditProfile,
+  onStartMatching
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSchool, setSelectedSchool] = useState('ALL');
@@ -42,8 +45,8 @@ export default function MentorList({
 
   return (
     <div className="animate-fade-in">
-      {/* Top Banner with Student Summary */}
-      {studentProfile && (
+      {/* Top Banner with Student Summary (Only if student has parsed resume & matched) */}
+      {studentProfile && hasMatches && (
         <div className="glass-panel" style={{
           padding: '18px 24px',
           marginBottom: '24px',
@@ -76,14 +79,64 @@ export default function MentorList({
         </div>
       )}
 
+      {/* If in Browse Mode and haven't matched yet, show invitation banner */}
+      {isBrowseMode && !hasMatches && (
+        <div className="glass-panel" style={{
+          padding: '16px 22px',
+          marginBottom: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '14px',
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(14, 165, 233, 0.08) 100%)',
+          borderColor: 'rgba(99, 102, 241, 0.3)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: 'rgba(99, 102, 241, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#818cf8',
+              flexShrink: 0
+            }}>
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>
+                Want to see your personalized match scores?
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                Upload your resume and confirm your details in the Match tab to generate AI-ranked match scores.
+              </div>
+            </div>
+          </div>
+          <button
+            className="btn-primary"
+            style={{ fontSize: '0.84rem', padding: '8px 18px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={onStartMatching}
+          >
+            <span>Match With Your Resume</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Header and Filter Controls */}
       <div className="recommendations-header">
         <div>
           <h2 style={{ fontSize: '1.6rem' }}>
-            Recommended Alumni Mentors <span style={{ color: '#818cf8', fontSize: '1.1rem' }}>({filteredMatches.length})</span>
+            {isBrowseMode && !hasMatches ? 'Browse Alumni Mentors' : 'Recommended Alumni Mentors'}{' '}
+            <span style={{ color: '#818cf8', fontSize: '1.1rem' }}>({filteredMatches.length})</span>
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-            All sessions are 100% free. Ranked by university affinity, career trajectory, and shared obstacles.
+            {isBrowseMode && !hasMatches
+              ? 'Explore verified alumni. Upload your resume and fill out your details in the Match tab to generate personalized match scores.'
+              : 'All sessions are 100% free. Ranked by university affinity, career trajectory, and shared obstacles.'}
           </p>
         </div>
 
@@ -143,10 +196,10 @@ export default function MentorList({
       <div className="mentors-grid">
         {filteredMatches.slice(0, visibleCount).map((item, index) => {
           const mentor = item.mentor || item;
-          const matchScore = item.match_score || 88;
+          const matchScore = typeof item.match_score === 'number' ? item.match_score : null;
           const isSchoolMatch = item.is_school_match || (studentProfile && studentProfile.school === mentor.school);
           const aiExplanation = item.ai_explanation || (
-            `As a ${mentor.school} alum currently working at ${mentor.company}, ${mentor.name} understands the curriculum and recruiting paths available to underclassmen.`
+            `As a ${mentor.school} alum currently working at ${mentor.company}, ${mentor.name} understands the curriculum and recruiting paths available to students.`
           );
           const reasons = item.reasons || [
             `Alumni from ${mentor.school} with verified experience`,
@@ -160,7 +213,7 @@ export default function MentorList({
               id={`mentor-card-${mentor.id}`}
               className="glass-panel glass-panel-hover mentor-card"
             >
-              {index === 0 && <div className="top-match-banner" />}
+              {index === 0 && matchScore && <div className="top-match-banner" />}
 
               <div>
                 <div className="mentor-header">
@@ -190,17 +243,23 @@ export default function MentorList({
                     </div>
                   </div>
 
-                  {/* Match Score Badge */}
-                  <div className="match-score-badge">
-                    <span className="match-score-pct">{matchScore}%</span>
-                    <span className="match-score-label">Match</span>
-                  </div>
+                  {/* Match Score Badge (Only show if resume parsed and matched) */}
+                  {matchScore ? (
+                    <div className="match-score-badge">
+                      <span className="match-score-pct">{matchScore}%</span>
+                      <span className="match-score-label">Match</span>
+                    </div>
+                  ) : (
+                    <span className="badge badge-company" style={{ fontSize: '0.74rem', padding: '5px 10px', color: '#cbd5e1', borderColor: 'rgba(255,255,255,0.12)' }}>
+                      Verified Alum
+                    </span>
+                  )}
                 </div>
 
                 {/* AI Explanation Box */}
                 <div className="ai-reasoning-box" style={{ marginTop: '14px' }}>
                   <div className="ai-reasoning-header">
-                    <Sparkles size={13} /> Why this mentor is a fit
+                    <Sparkles size={13} /> {matchScore ? 'Why this mentor is a fit' : 'Mentor Focus & Background'}
                   </div>
                   <div className="ai-reasoning-text">
                     {aiExplanation}

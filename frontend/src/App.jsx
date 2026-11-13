@@ -216,8 +216,9 @@ export default function App() {
 
             {currentStep === 3 && (
               <MentorList
-                matches={rankedMatches.length > 0 ? rankedMatches : allMentors.map((m) => ({ mentor: m, match_score: 88 }))}
+                matches={rankedMatches}
                 studentProfile={studentProfile}
+                hasMatches={rankedMatches.length > 0}
                 onSelectMentor={(item) => setSelectedMentorForBooking(item)}
                 onEditProfile={() => setCurrentStep(2)}
               />
@@ -225,24 +226,36 @@ export default function App() {
           </>
         )}
 
-        {/* Explore All 12 Mentors Tab */}
+        {/* Explore All Mentors Tab */}
         {activeTab === 'explore' && (
           <MentorList
-            matches={allMentors.map((m) => ({
-              mentor: m,
-              match_score: 90,
-              reasons: [
-                `Verified alumni from ${m.school}`,
-                `${m.role} at ${m.company}`,
-                `Overcame: ${m.challenges_overcome?.[0] || 'Competitive recruitment'}`
-              ],
-              ai_explanation: `${m.name} is a ${m.school} graduate currently working as ${m.role} at ${m.company}.`
-            }))}
+            matches={allMentors.map((m) => {
+              const matched = rankedMatches.find((rm) => (rm.mentor?.id || rm.id) === m.id);
+              if (matched && typeof matched.match_score === 'number') {
+                return matched;
+              }
+              return {
+                mentor: m,
+                match_score: null,
+                reasons: [
+                  `Verified alumni from ${m.school}`,
+                  `${m.role} at ${m.company}`,
+                  `Overcame: ${m.challenges_overcome?.[0] || 'Competitive recruitment'}`
+                ],
+                ai_explanation: `${m.name} is a ${m.school} graduate currently working as ${m.role} at ${m.company}.`
+              };
+            })}
             studentProfile={studentProfile}
+            isBrowseMode={true}
+            hasMatches={rankedMatches.length > 0}
             onSelectMentor={(item) => setSelectedMentorForBooking(item)}
             onEditProfile={() => {
               setActiveTab('match');
               setCurrentStep(2);
+            }}
+            onStartMatching={() => {
+              setActiveTab('match');
+              setCurrentStep(1);
             }}
           />
         )}
