@@ -143,6 +143,11 @@ export default function App() {
     setBookings((prev) => [newBooking, ...prev]);
   };
 
+  // Handle Booking Deletion
+  const handleBookingDeleted = (deletedId) => {
+    setBookings((prev) => prev.filter((b) => b.id !== deletedId));
+  };
+
   return (
     <div className="app-container">
       {/* Navigation */}
@@ -254,6 +259,7 @@ export default function App() {
               setActiveTab('match');
               setCurrentStep(1);
             }}
+            onBookingDeleted={handleBookingDeleted}
           />
         )}
       </main>

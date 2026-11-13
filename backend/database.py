@@ -825,6 +825,18 @@ def get_all_bookings(username: Optional[str] = None) -> List[Dict[str, Any]]:
     conn.close()
     return bookings
 
+def delete_booking(booking_id: str, username: Optional[str] = None) -> bool:
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    if username:
+        cursor.execute("DELETE FROM bookings WHERE id = ? AND LOWER(username) = LOWER(?)", (booking_id, username.strip()))
+    else:
+        cursor.execute("DELETE FROM bookings WHERE id = ?", (booking_id,))
+    deleted = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    return deleted
+
 def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
     if not salt:
         salt = secrets.token_hex(16)

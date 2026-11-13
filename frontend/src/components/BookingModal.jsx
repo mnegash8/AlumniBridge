@@ -339,11 +339,17 @@ export default function BookingModal({
                 />
               </div>
               <div className="form-group full-width">
-                <label className="form-label">Specific topics or questions for this call (Optional)</label>
+                <label className="form-label">
+                  {sessionFormat === 'ASYNC_REVIEW'
+                    ? `Resume bullets, essay prompt, or specific questions for ${mentor.name} (Optional)`
+                    : 'Specific topics or questions for this call (Optional)'}
+                </label>
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="e.g. Please review my project section or ask how to prepare for technical screens..."
+                  placeholder={sessionFormat === 'ASYNC_REVIEW'
+                    ? 'e.g. Please critique my second experience bullet, or review my GSU scholarship essay intro...'
+                    : 'e.g. Please review my project section or ask how to prepare for technical screens...'}
                   value={studentNotes}
                   onChange={(e) => setStudentNotes(e.target.value)}
                 />

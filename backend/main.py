@@ -17,6 +17,7 @@ from database import (
     get_mentor_by_id,
     create_booking,
     get_all_bookings,
+    delete_booking,
     create_user,
     authenticate_user
 )
@@ -275,6 +276,13 @@ def book_mentor_session(payload: BookingRequest):
 def list_bookings(username: Optional[str] = None):
     bookings = get_all_bookings(username=username)
     return {"bookings": bookings}
+
+@app.delete("/api/bookings/{booking_id}")
+def cancel_booking(booking_id: str, username: Optional[str] = None):
+    deleted = delete_booking(booking_id, username=username)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Booking not found or not authorized to delete")
+    return {"success": True, "message": "Booking removed successfully", "booking_id": booking_id}
 
 @app.get("/api/samples")
 def get_samples():

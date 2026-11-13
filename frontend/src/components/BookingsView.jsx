@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video, Play, Pause, Mic, Zap, FileText, Target, ListChecks, Lightbulb } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video, Play, Pause, Mic, Zap, FileText, Target, ListChecks, Lightbulb, Trash2 } from 'lucide-react';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
-export default function BookingsView({ bookings = [], onFindMentors, currentUser }) {
+export default function BookingsView({ bookings = [], onFindMentors, currentUser, onBookingDeleted }) {
   const [copiedQuestion, setCopiedQuestion] = useState(null);
   const [playingAudioId, setPlayingAudioId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const toggleAudioPlay = (id) => {
     setPlayingAudioId((prev) => (prev === id ? null : id));
@@ -14,6 +16,36 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
     navigator.clipboard.writeText(text);
     setCopiedQuestion(id);
     setTimeout(() => setCopiedQuestion(null), 2000);
+  };
+
+  const handleDelete = async (bookingId) => {
+    if (confirmDeleteId !== bookingId) {
+      setConfirmDeleteId(bookingId);
+      setTimeout(() => {
+        setConfirmDeleteId((curr) => (curr === bookingId ? null : curr));
+      }, 4000);
+      return;
+    }
+
+    setDeletingId(bookingId);
+    try {
+      const url = currentUser?.username
+        ? `http://localhost:8000/api/bookings/${bookingId}?username=${encodeURIComponent(currentUser.username)}`
+        : `http://localhost:8000/api/bookings/${bookingId}`;
+      const res = await fetch(url, { method: 'DELETE' });
+      if (!res.ok) {
+        throw new Error('Failed to cancel booking');
+      }
+      if (onBookingDeleted) {
+        onBookingDeleted(bookingId);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not cancel booking. Please try again.');
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
   };
 
   if (!bookings || bookings.length === 0) {
@@ -117,10 +149,40 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
               </div>
 
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-mono)' }}>
-                  FREE ($0)
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-mono)' }}>
+                    FREE ($0)
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(b.id)}
+                    disabled={deletingId === b.id}
+                    style={{
+                      background: confirmDeleteId === b.id ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                      border: confirmDeleteId === b.id ? '1px solid rgba(239, 68, 68, 0.6)' : '1px solid var(--border-subtle)',
+                      color: confirmDeleteId === b.id ? '#f87171' : 'var(--text-muted)',
+                      borderRadius: '6px',
+                      padding: '3px 8px',
+                      fontSize: '0.74rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                    title="Cancel and remove this booking"
+                  >
+                    <Trash2 size={12} />
+                    <span>
+                      {deletingId === b.id
+                        ? 'Removing...'
+                        : confirmDeleteId === b.id
+                        ? 'Confirm Cancel?'
+                        : 'Cancel'}
+                    </span>
+                  </button>
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
                   <Calendar size={13} /> {b.session_date} • <Clock size={13} /> {b.session_time}
                 </div>
               </div>
