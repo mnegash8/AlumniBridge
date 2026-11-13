@@ -592,7 +592,18 @@ def init_db(force_reseed: bool = True):
     # Re-seed mentors to apply updates
     if force_reseed:
         cursor.execute("DELETE FROM mentors")
-        for m in INITIAL_MENTORS:
+        
+        # Load 500 mentors from mentors_500.json if present
+        json_path = os.path.join(os.path.dirname(__file__), "mentors_500.json")
+        mentors_to_seed = INITIAL_MENTORS
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, "r", encoding="utf-8") as f:
+                    mentors_to_seed = json.load(f)
+            except Exception as e:
+                print("Error loading mentors_500.json:", e)
+                
+        for m in mentors_to_seed:
             cursor.execute("""
             INSERT INTO mentors (
                 id, name, school, major, graduation_year, role, company, bio, avatar,

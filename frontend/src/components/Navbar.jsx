@@ -36,7 +36,7 @@ export default function Navbar({ activeTab, setActiveTab, bookingsCount, onOpenJ
             onClick={() => setActiveTab('explore')}
           >
             <Users size={16} />
-            <span>Browse All (12)</span>
+            <span>Browse All (500)</span>
           </button>
 
           <button

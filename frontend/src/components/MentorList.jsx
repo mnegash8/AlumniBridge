@@ -9,6 +9,7 @@ export default function MentorList({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSchool, setSelectedSchool] = useState('ALL');
+  const [visibleCount, setVisibleCount] = useState(24);
 
   // Extract unique schools
   const availableSchools = Array.from(new Set(matches.map((m) => m.mentor?.school || m.school))).filter(Boolean);
@@ -140,7 +141,7 @@ export default function MentorList({
 
       {/* Mentors Grid */}
       <div className="mentors-grid">
-        {filteredMatches.map((item, index) => {
+        {filteredMatches.slice(0, visibleCount).map((item, index) => {
           const mentor = item.mentor || item;
           const matchScore = item.match_score || 88;
           const isSchoolMatch = item.is_school_match || (studentProfile && studentProfile.school === mentor.school);
@@ -269,6 +270,19 @@ export default function MentorList({
           );
         })}
       </div>
+
+      {/* Load More Button for 500 Mentors */}
+      {visibleCount < filteredMatches.length && (
+        <div style={{ textAlign: 'center', margin: '36px 0 20px' }}>
+          <button
+            className="btn-secondary"
+            style={{ padding: '12px 32px', fontSize: '0.94rem', borderRadius: '12px', borderColor: 'rgba(99, 102, 241, 0.4)' }}
+            onClick={() => setVisibleCount((prev) => prev + 24)}
+          >
+            Load More Mentors (Showing {Math.min(visibleCount, filteredMatches.length)} of {filteredMatches.length})
+          </button>
+        </div>
+      )}
 
       {filteredMatches.length === 0 && (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
