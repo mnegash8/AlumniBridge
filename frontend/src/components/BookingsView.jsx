@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video } from 'lucide-react';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
-export default function BookingsView({ bookings = [], onFindMentors }) {
+export default function BookingsView({ bookings = [], onFindMentors, currentUser }) {
   const [copiedQuestion, setCopiedQuestion] = useState(null);
 
   const copyText = (text, id) => {
@@ -42,9 +42,13 @@ export default function BookingsView({ bookings = [], onFindMentors }) {
     <div className="animate-fade-in" style={{ maxWidth: '960px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h2 style={{ fontSize: '1.6rem' }}>My Confirmed Mentorship Sessions</h2>
+          <h2 style={{ fontSize: '1.6rem' }}>
+            {currentUser?.name ? `${currentUser.name}'s Mentorship Sessions` : 'My Confirmed Mentorship Sessions'}
+          </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-            Review upcoming appointments and review your personalized AI session prep questions.
+            {currentUser?.username
+              ? `Linked to account @${currentUser.username} • ${currentUser.school || 'Georgia State University'}`
+              : 'Review upcoming appointments and review your personalized AI session prep questions.'}
           </p>
         </div>
         <button className="btn-secondary" onClick={onFindMentors}>
@@ -68,6 +72,18 @@ export default function BookingsView({ bookings = [], onFindMentors }) {
                   }}>
                     {b.id}
                   </span>
+                  {b.username && (
+                    <span style={{
+                      fontSize: '0.74rem',
+                      color: '#a5b4fc',
+                      background: 'rgba(99, 102, 241, 0.12)',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(99, 102, 241, 0.25)'
+                    }}>
+                      @{b.username}
+                    </span>
+                  )}
                   <span className="badge badge-match">
                     <CheckCircle2 size={12} /> {b.payment_status}
                   </span>

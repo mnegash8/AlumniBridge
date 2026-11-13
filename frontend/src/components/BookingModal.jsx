@@ -19,6 +19,7 @@ import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 export default function BookingModal({
   mentorData,
   studentProfile,
+  currentUser,
   isOpen,
   onClose,
   onBookingSuccess
@@ -36,7 +37,7 @@ export default function BookingModal({
   const [selectedSlot, setSelectedSlot] = useState(slots[0] || null);
   const [studentNotes, setStudentNotes] = useState('');
   const [studentEmail, setStudentEmail] = useState(
-    studentProfile?.email || (studentProfile?.name ? `${studentProfile.name.toLowerCase().replace(/\s+/g, '.')}@gmail.com` : 'student@gmail.com')
+    currentUser?.email || studentProfile?.email || (currentUser?.name ? `${currentUser.name.toLowerCase().replace(/\s+/g, '.')}@gmail.com` : 'student@gmail.com')
   );
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,14 +51,15 @@ export default function BookingModal({
     const payload = {
       mentor_id: mentor.id,
       service_id: selectedService.id,
-      student_name: studentProfile?.name || "Student Applicant",
-      student_email: studentEmail,
-      student_school: studentProfile?.school || mentor.school,
+      student_name: currentUser?.name || studentProfile?.name || "Student Applicant",
+      student_email: studentEmail || currentUser?.email || "student@gmail.com",
+      student_school: currentUser?.school || studentProfile?.school || mentor.school,
       student_major: studentProfile?.major || mentor.major,
       session_date: selectedSlot.date,
       session_time: selectedSlot.time,
       student_goals: studentProfile?.target_role || studentProfile?.goals || "",
-      student_notes: studentNotes
+      student_notes: studentNotes,
+      username: currentUser?.username || undefined
     };
 
     try {
@@ -197,11 +199,18 @@ export default function BookingModal({
             {/* Step 3: Student Details & Notes */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '14px' }}>
               <div className="form-group">
-                <label className="form-label">Student Name</label>
+                <label className="form-label">
+                  Student Account
+                  {currentUser?.username && (
+                    <span style={{ color: '#38bdf8', fontSize: '0.74rem', marginLeft: '6px' }}>
+                      (@{currentUser.username})
+                    </span>
+                  )}
+                </label>
                 <input
                   type="text"
                   className="form-input"
-                  value={studentProfile?.name || 'Student Applicant'}
+                  value={currentUser?.name || studentProfile?.name || 'Student Applicant'}
                   disabled
                 />
               </div>

@@ -572,6 +572,7 @@ def init_db(force_reseed: bool = True):
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS bookings (
         id TEXT PRIMARY KEY,
+        username TEXT,
         mentor_id TEXT NOT NULL,
         mentor_name TEXT NOT NULL,
         student_name TEXT NOT NULL,
@@ -590,6 +591,15 @@ def init_db(force_reseed: bool = True):
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    # Ensure username column exists in bookings table if already created
+    try:
+        cursor.execute("ALTER TABLE bookings ADD COLUMN username TEXT")
+    except Exception:
+        pass
+
+    # Backfill legacy bookings without a username to mnegash
+    cursor.execute("UPDATE bookings SET username = 'mnegash' WHERE username IS NULL")
     
     # Users table for genuine account authentication
     cursor.execute("""
@@ -731,13 +741,14 @@ def create_booking(data: Dict[str, Any]) -> Dict[str, Any]:
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO bookings (
-        id, mentor_id, mentor_name, student_name, student_email,
+        id, username, mentor_id, mentor_name, student_name, student_email,
         student_school, student_major, service_id, service_title,
         service_price, session_date, session_time, student_goals,
         student_notes, payment_status, prep_questions
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data["id"],
+        data.get("username"),
         data["mentor_id"],
         data["mentor_name"],
         data["student_name"],
@@ -758,16 +769,24 @@ def create_booking(data: Dict[str, Any]) -> Dict[str, Any]:
     conn.close()
     return data
 
-def get_all_bookings() -> List[Dict[str, Any]]:
+def get_all_bookings(username: Optional[str] = None) -> List[Dict[str, Any]]:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM bookings ORDER BY created_at DESC")
+    if username:
+        cursor.execute("""
+            SELECT * FROM bookings 
+            WHERE LOWER(username) = LOWER(?)
+            ORDER BY created_at DESC
+        """, (username.strip(),))
+    else:
+        cursor.execute("SELECT * FROM bookings ORDER BY created_at DESC")
     rows = cursor.fetchall()
     bookings = []
     for r in rows:
         bookings.append({
             "id": r["id"],
+            "username": r["username"] if "username" in r.keys() else None,
             "mentor_id": r["mentor_id"],
             "mentor_name": r["mentor_name"],
             "student_name": r["student_name"],

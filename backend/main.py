@@ -69,6 +69,7 @@ class BookingRequest(BaseModel):
     session_time: str
     student_goals: Optional[str] = ""
     student_notes: Optional[str] = ""
+    username: Optional[str] = None
 
 @app.get("/api/health")
 def health_check():
@@ -176,6 +177,7 @@ def book_mentor_session(payload: BookingRequest):
     
     booking_record = {
         "id": booking_id,
+        "username": payload.username.strip().lower() if payload.username else None,
         "mentor_id": mentor["id"],
         "mentor_name": mentor["name"],
         "student_name": payload.student_name,
@@ -208,8 +210,8 @@ def book_mentor_session(payload: BookingRequest):
     }
 
 @app.get("/api/bookings")
-def list_bookings():
-    bookings = get_all_bookings()
+def list_bookings(username: Optional[str] = None):
+    bookings = get_all_bookings(username=username)
     return {"bookings": bookings}
 
 @app.get("/api/samples")

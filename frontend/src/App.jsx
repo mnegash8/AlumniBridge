@@ -39,7 +39,7 @@ export default function App() {
   // Fetch initial mentors & bookings and prompt login if not authenticated
   useEffect(() => {
     fetchMentors();
-    fetchBookings();
+    fetchBookings(currentUser);
     if (!currentUser) {
       setIsAuthModalOpen(true);
     }
@@ -57,9 +57,12 @@ export default function App() {
     }
   };
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (user = currentUser) => {
     try {
-      const res = await fetch(`${API_BASE}/bookings`);
+      const url = user?.username
+        ? `${API_BASE}/bookings?username=${encodeURIComponent(user.username)}`
+        : `${API_BASE}/bookings`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setBookings(data.bookings || []);
@@ -123,6 +126,7 @@ export default function App() {
   // Auth Handlers
   const handleAuthSuccess = (user) => {
     setCurrentUser(user);
+    fetchBookings(user);
     if (!studentProfile) {
       setStudentProfile({
         name: user.name,
@@ -146,6 +150,8 @@ export default function App() {
     localStorage.removeItem('ab_token');
     localStorage.removeItem('ab_user');
     setCurrentUser(null);
+    setBookings([]);
+    setIsAuthModalOpen(true);
   };
 
   // Handle Booking Success
@@ -258,6 +264,7 @@ export default function App() {
         {activeTab === 'bookings' && (
           <BookingsView
             bookings={bookings}
+            currentUser={currentUser}
             onFindMentors={() => {
               setActiveTab('match');
               setCurrentStep(1);
@@ -288,6 +295,7 @@ export default function App() {
       <BookingModal
         mentorData={selectedMentorForBooking}
         studentProfile={studentProfile}
+        currentUser={currentUser}
         isOpen={!!selectedMentorForBooking}
         onClose={() => setSelectedMentorForBooking(null)}
         onBookingSuccess={handleBookingSuccess}
