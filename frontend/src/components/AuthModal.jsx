@@ -12,14 +12,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [selectedAccount, setSelectedAccount] = useState('mohammed');
   const [customEmail, setCustomEmail] = useState('');
 
-  // Google Sign-In specific states
-  const [googleStep, setGoogleStep] = useState('custom_email'); // 'custom_email' | 'password' | 'chooser'
-  const [googleCustomEmail, setGoogleCustomEmail] = useState('');
+  // Google Sign-In specific states (matching Google's exact web sign-in UI)
+  const [googleStep, setGoogleStep] = useState('email'); // 'email' | 'password'
+  const [googleCustomEmail, setGoogleCustomEmail] = useState('mnegash.edu@gmail.com');
   const [googlePassword, setGooglePassword] = useState('');
-  const [activeGoogleUser, setActiveGoogleUser] = useState({
-    name: 'Mohammed Negash',
-    email: 'mohammednnegash@gmail.com'
-  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   
   // Traditional form state
   const [email, setEmail] = useState('');
@@ -31,25 +29,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   // Trigger OAuth flow
   const startOAuthFlow = (provider) => {
     if (provider === 'google') {
-      // Open the official Google/Gmail sign-in prompt window
-      const width = 500;
-      const height = 650;
-      const left = window.screenX + Math.max(0, (window.outerWidth - width) / 2);
-      const top = window.screenY + Math.max(0, (window.outerHeight - height) / 2.5);
-      try {
-        const googleUrl = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&service=mail&flowName=GlifWebSignIn&flowEntry=ServiceLogin';
-        window.open(
-          googleUrl,
-          'google_login_window',
-          `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes,scrollbars=yes`
-        );
-      } catch (err) {
-        console.warn('Popup blocked, continuing in modal', err);
-      }
-
-      setGoogleStep('custom_email');
+      // Displays the exact 2-column Google Sign-In interface to create/login the account for our website
+      setGoogleStep('email');
+      setGoogleCustomEmail('mnegash.edu@gmail.com');
       setGooglePassword('');
-      setGoogleCustomEmail('');
     } else if (provider === 'github') {
       try {
         const width = 500;
@@ -72,9 +55,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     });
   };
 
-  // Complete Google Sign In
-  const handleGoogleSubmit = async (userToAuth) => {
-    const finalUser = userToAuth || activeGoogleUser;
+  // Complete Google Sign In & Account Creation for AlumniBridge
+  const handleGoogleSubmit = async (userEmailToUse) => {
+    const finalEmail = (userEmailToUse || googleCustomEmail || 'mnegash.edu@gmail.com').trim();
+    const rawName = finalEmail.split('@')[0].replace(/[._]/g, ' ');
+    const formattedName = rawName.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) || "Mohammed Negash";
+
     setOauthDialog({ provider: 'google', step: 'authorizing' });
 
     try {
@@ -83,8 +69,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: 'google',
-          name: finalUser.name,
-          email: finalUser.email,
+          name: formattedName.includes('Mnegash') ? 'Mohammed Negash' : formattedName,
+          email: finalEmail,
           school: 'Georgia State University',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
           role
@@ -94,6 +80,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       if (!res.ok) throw new Error('Google authorization failed');
       const data = await res.json();
       
+      // Save session in localStorage
       localStorage.setItem('ab_token', data.access_token);
       localStorage.setItem('ab_user', JSON.stringify(data.user));
 
@@ -113,17 +100,17 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     setOauthDialog({ ...oauthDialog, step: 'authorizing' });
 
     let userName = "Mohammed Negash";
-    let userEmail = "mnegash@student.gsu.edu";
+    let userEmail = "mnegash.edu@gmail.com";
     let userSchool = "Georgia State University";
     let userAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80";
 
     if (selectedAccount === 'demarcus') {
       userName = "DeMarcus Cole";
-      userEmail = "dcole12@student.gsu.edu";
+      userEmail = "dcole12@gmail.com";
       userSchool = "Georgia State University";
     } else if (selectedAccount === 'jordan') {
       userName = "Jordan Miller";
-      userEmail = "jordan.miller@berkeley.edu";
+      userEmail = "jordan.miller@gmail.com";
       userSchool = "UC Berkeley";
     } else if (selectedAccount === 'custom' && customEmail.trim()) {
       userEmail = customEmail.trim();
@@ -198,418 +185,338 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       <div
         className="modal-content animate-fade-in"
         style={{
-          maxWidth: oauthDialog?.provider === 'google' ? '460px' : '520px',
-          padding: oauthDialog?.provider === 'google' ? '36px 32px 28px' : '36px',
-          background: oauthDialog?.provider === 'google' ? '#202124' : 'var(--bg-card)',
-          borderRadius: oauthDialog?.provider === 'google' ? '16px' : '16px',
-          border: oauthDialog?.provider === 'google' ? '1px solid #3c4043' : '1px solid var(--border-subtle)'
+          maxWidth: oauthDialog?.provider === 'google' ? '740px' : '520px',
+          padding: oauthDialog?.provider === 'google' ? '44px 44px 36px' : '36px',
+          background: oauthDialog?.provider === 'google' ? '#1f1f1f' : 'var(--bg-card)',
+          borderRadius: oauthDialog?.provider === 'google' ? '28px' : '16px',
+          border: oauthDialog?.provider === 'google' ? '1px solid #3c4043' : '1px solid var(--border-subtle)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal-close-btn" onClick={onClose}>
+        <button className="modal-close-btn" onClick={onClose} style={{ top: '20px', right: '20px' }}>
           <X size={20} />
         </button>
 
-        {/* AUTHENTIC GOOGLE / GMAIL SIGN IN VIEW */}
+        {/* EXACT GOOGLE SIGN-IN EXPERIENCE (2-COLUMN LAYOUT) */}
         {oauthDialog?.provider === 'google' ? (
           <div className="animate-fade-in" style={{ fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, sans-serif' }}>
-            {/* Google Colorful Logo */}
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <svg viewBox="0 0 48 48" width="44" height="44" style={{ display: 'inline-block' }}>
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              </svg>
-            </div>
-
-            {/* Google Sign In Header */}
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 500, color: '#e8eaed', marginBottom: '6px' }}>
-                {googleStep === 'password' ? 'Welcome' : 'Sign in'}
-              </h2>
-              <p style={{ fontSize: '0.92rem', color: '#9aa0a6' }}>
-                to continue to <strong style={{ color: '#e8eaed' }}>AlumniBridge</strong>
-              </p>
-            </div>
-
-            {/* State 1: Choose Account */}
-            {googleStep === 'chooser' && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1.25fr',
+              gap: '40px',
+              alignItems: 'start'
+            }}>
+              {/* LEFT COLUMN: Google Logo & Heading */}
               <div>
-                <div style={{ fontSize: '0.85rem', color: '#9aa0a6', marginBottom: '12px' }}>
-                  Choose an account
-                </div>
+                <svg viewBox="0 0 48 48" width="48" height="48" style={{ display: 'block', marginBottom: '20px' }}>
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                  {/* Mohammed Negash Account Card */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '14px',
-                      padding: '12px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid #3c4043',
-                      background: '#303134',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onClick={() => {
-                      const user = { name: 'Mohammed Negash', email: 'mohammednnegash@gmail.com' };
-                      setActiveGoogleUser(user);
-                      setGoogleStep('password');
-                    }}
-                  >
-                    {/* Purple Avatar with 'M' */}
+                <h1 style={{
+                  fontSize: '2.1rem',
+                  fontWeight: 400,
+                  color: '#e8eaed',
+                  margin: '0 0 10px',
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2
+                }}>
+                  {googleStep === 'password' ? 'Welcome' : 'Sign in'}
+                </h1>
+
+                <p style={{ fontSize: '1rem', color: '#e8eaed', margin: '0 0 6px' }}>
+                  Use your Google Account
+                </p>
+
+                <p style={{ fontSize: '0.86rem', color: '#9aa0a6', margin: '0' }}>
+                  to create or access your student account on <strong style={{ color: '#fff' }}>AlumniBridge</strong>
+                </p>
+              </div>
+
+              {/* RIGHT COLUMN: Interactive Input Area */}
+              <div>
+                {/* STEP 1: Email or Phone Input */}
+                {googleStep === 'email' && (
+                  <div>
+                    {/* Outlined Material Input Field */}
                     <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: '#7c3aed',
-                      color: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.2rem',
-                      fontWeight: 600
+                      position: 'relative',
+                      border: isInputFocused ? '2px solid #8ab4f8' : '1px solid #8e918f',
+                      borderRadius: '4px',
+                      padding: '12px 14px',
+                      background: 'transparent',
+                      marginTop: '6px',
+                      transition: 'border 0.2s ease'
                     }}>
-                      M
+                      <label style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        left: '10px',
+                        background: '#1f1f1f',
+                        padding: '0 4px',
+                        fontSize: '0.75rem',
+                        color: isInputFocused ? '#8ab4f8' : '#9aa0a6',
+                        fontWeight: 500
+                      }}>
+                        Email or phone
+                      </label>
+                      <input
+                        type="text"
+                        autoFocus
+                        value={googleCustomEmail}
+                        onChange={(e) => setGoogleCustomEmail(e.target.value)}
+                        onFocus={() => setIsInputFocused(true)}
+                        onBlur={() => setIsInputFocused(false)}
+                        placeholder="mnegash.edu@gmail.com"
+                        style={{
+                          width: '100%',
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#e8eaed',
+                          fontSize: '1rem',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && googleCustomEmail.trim()) {
+                            setGoogleStep('password');
+                          }
+                        }}
+                      />
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.92rem', fontWeight: 500, color: '#e8eaed' }}>Mohammed Negash</div>
-                      <div style={{ fontSize: '0.82rem', color: '#9aa0a6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        mohammednnegash@gmail.com
-                      </div>
-                    </div>
-                    <ChevronRight size={18} color="#9aa0a6" />
-                  </div>
 
-                  {/* Use another account option */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '14px',
-                      padding: '12px 14px',
-                      borderRadius: '8px',
-                      border: '1px solid #3c4043',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onClick={() => setGoogleStep('custom_email')}
-                  >
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      background: '#3c4043',
+                    <div style={{ marginTop: '9px', textAlign: 'left' }}>
+                      <a
+                        href="#forgot"
+                        onClick={(e) => e.preventDefault()}
+                        style={{ fontSize: '0.84rem', color: '#8ab4f8', textDecoration: 'none', fontWeight: 500 }}
+                      >
+                        Forgot email?
+                      </a>
+                    </div>
+
+                    <p style={{
+                      fontSize: '0.84rem',
                       color: '#9aa0a6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      lineHeight: 1.45,
+                      marginTop: '28px',
+                      marginBottom: '28px'
                     }}>
-                      <User size={20} />
-                    </div>
-                    <div style={{ flex: 1, fontSize: '0.92rem', color: '#e8eaed', fontWeight: 500 }}>
-                      Use another account
-                    </div>
-                  </div>
-                </div>
+                      Not your computer? Use Guest mode to sign in privately.{' '}
+                      <a href="#guest" onClick={(e) => e.preventDefault()} style={{ color: '#8ab4f8', textDecoration: 'none' }}>
+                        Learn more about using Guest mode
+                      </a>
+                    </p>
 
-                {/* Google Disclosure */}
-                <p style={{ fontSize: '0.78rem', color: '#9aa0a6', lineHeight: 1.5, marginBottom: '24px' }}>
-                  To continue, Google will share your name, email address, language preference, and profile picture with AlumniBridge.
-                </p>
-
-                {/* Footer Buttons */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#8ab4f8',
-                      fontSize: '0.88rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      padding: '8px 12px'
-                    }}
-                    onClick={() => setOauthDialog(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    style={{
-                      background: '#1a73e8',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '24px',
-                      padding: '10px 24px',
-                      fontSize: '0.88rem',
-                      fontWeight: 500,
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => {
-                      const user = { name: 'Mohammed Negash', email: 'mohammednnegash@gmail.com' };
-                      handleGoogleSubmit(user);
-                    }}
-                  >
-                    {oauthDialog.step === 'authorizing' ? 'Signing in...' : 'Sign in'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* State 2: Enter Email or Phone */}
-            {googleStep === 'custom_email' && (
-              <div>
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{
-                    border: '1px solid #5f6368',
-                    borderRadius: '6px',
-                    padding: '10px 14px',
-                    background: 'transparent'
-                  }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#8ab4f8', marginBottom: '2px' }}>
-                      Email or phone
-                    </label>
-                    <input
-                      type="email"
-                      autoFocus
-                      placeholder="example@gmail.com"
-                      value={googleCustomEmail}
-                      onChange={(e) => setGoogleCustomEmail(e.target.value)}
-                      style={{
-                        width: '100%',
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#e8eaed',
-                        fontSize: '0.95rem',
-                        outline: 'none'
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && googleCustomEmail.trim()) {
-                          const nameFromEmail = googleCustomEmail.split('@')[0].replace('.', ' ');
-                          setActiveGoogleUser({
-                            name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1),
-                            email: googleCustomEmail.trim()
-                          });
+                    {/* Bottom Action Buttons */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '32px'
+                    }}>
+                      <a
+                        href="#create"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setGoogleCustomEmail('mnegash.edu@gmail.com');
                           setGoogleStep('password');
-                        }
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginTop: '8px', textAlign: 'left' }}>
-                    <a href="#forgot" onClick={(e) => e.preventDefault()} style={{ fontSize: '0.82rem', color: '#8ab4f8', textDecoration: 'none' }}>
-                      Forgot email?
-                    </a>
-                  </div>
-                </div>
+                        }}
+                        style={{
+                          fontSize: '0.88rem',
+                          color: '#8ab4f8',
+                          textDecoration: 'none',
+                          fontWeight: 500
+                        }}
+                      >
+                        Create account
+                      </a>
 
-                <p style={{ fontSize: '0.78rem', color: '#9aa0a6', lineHeight: 1.5, marginBottom: '16px' }}>
-                  Not your computer? Use Guest mode to sign in privately.
-                </p>
-
-                {/* 1-Click Fast Demo Option */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #3c4043',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    cursor: 'pointer',
-                    marginBottom: '20px'
-                  }}
-                  onClick={() => {
-                    const user = { name: 'Mohammed Negash', email: 'mohammednnegash@gmail.com' };
-                    handleGoogleSubmit(user);
-                  }}
-                >
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    background: '#7c3aed',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.85rem',
-                    fontWeight: 600
-                  }}>
-                    M
-                  </div>
-                  <div style={{ flex: 1, textAlign: 'left' }}>
-                    <div style={{ fontSize: '0.82rem', color: '#e8eaed', fontWeight: 500 }}>
-                      Quick 1-Click: Mohammed Negash
-                    </div>
-                    <div style={{ fontSize: '0.74rem', color: '#9aa0a6' }}>
-                      mohammednnegash@gmail.com
+                      <button
+                        type="button"
+                        style={{
+                          background: '#8ab4f8',
+                          color: '#001d35',
+                          border: 'none',
+                          borderRadius: '20px',
+                          padding: '10px 24px',
+                          fontSize: '0.88rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'opacity 0.2s ease',
+                          opacity: googleCustomEmail.trim() ? 1 : 0.6
+                        }}
+                        disabled={!googleCustomEmail.trim()}
+                        onClick={() => {
+                          if (!googleCustomEmail.trim()) return;
+                          setGoogleStep('password');
+                        }}
+                      >
+                        Next
+                      </button>
                     </div>
                   </div>
-                  <ChevronRight size={15} color="#9aa0a6" />
-                </div>
+                )}
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#8ab4f8',
-                      fontSize: '0.88rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      padding: '8px 12px'
-                    }}
-                    onClick={() => setOauthDialog(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    style={{
-                      background: '#1a73e8',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '24px',
-                      padding: '10px 24px',
-                      fontSize: '0.88rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      opacity: googleCustomEmail.trim() ? 1 : 0.6
-                    }}
-                    disabled={!googleCustomEmail.trim()}
-                    onClick={() => {
-                      if (!googleCustomEmail.trim()) return;
-                      const nameFromEmail = googleCustomEmail.split('@')[0].replace('.', ' ');
-                      const user = {
-                        name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1),
-                        email: googleCustomEmail.trim()
-                      };
-                      setActiveGoogleUser(user);
-                      setGoogleStep('password');
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* State 3: Enter Password */}
-            {googleStep === 'password' && (
-              <div>
-                {/* User chip */}
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '4px 12px 4px 6px',
-                    borderRadius: '16px',
-                    border: '1px solid #3c4043',
-                    marginBottom: '20px',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setGoogleStep('chooser')}
-                >
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    background: '#7c3aed',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    fontWeight: 600
-                  }}>
-                    {activeGoogleUser.name.charAt(0)}
-                  </div>
-                  <span style={{ fontSize: '0.82rem', color: '#e8eaed' }}>{activeGoogleUser.email}</span>
-                </div>
-
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{
-                    border: '1px solid #5f6368',
-                    borderRadius: '6px',
-                    padding: '10px 14px',
-                    background: 'transparent'
-                  }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#8ab4f8', marginBottom: '2px' }}>
-                      Enter your password
-                    </label>
-                    <input
-                      type="password"
-                      autoFocus
-                      placeholder="••••••••"
-                      value={googlePassword}
-                      onChange={(e) => setGooglePassword(e.target.value)}
+                {/* STEP 2: Password Input */}
+                {googleStep === 'password' && (
+                  <div>
+                    {/* User account chip with back option */}
+                    <div
                       style={{
-                        width: '100%',
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#e8eaed',
-                        fontSize: '0.95rem',
-                        outline: 'none'
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '4px 12px 4px 6px',
+                        borderRadius: '16px',
+                        border: '1px solid #5f6368',
+                        marginBottom: '24px',
+                        cursor: 'pointer'
                       }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleGoogleSubmit(activeGoogleUser);
-                        }
-                      }}
-                    />
-                  </div>
-                  <div style={{ marginTop: '8px', textAlign: 'left' }}>
-                    <a href="#forgot" onClick={(e) => e.preventDefault()} style={{ fontSize: '0.82rem', color: '#8ab4f8', textDecoration: 'none' }}>
-                      Forgot password?
-                    </a>
-                  </div>
-                </div>
+                      onClick={() => setGoogleStep('email')}
+                    >
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: '#7c3aed',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.72rem',
+                        fontWeight: 600
+                      }}>
+                        M
+                      </div>
+                      <span style={{ fontSize: '0.82rem', color: '#e8eaed' }}>{googleCustomEmail}</span>
+                    </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#8ab4f8',
-                      fontSize: '0.88rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      padding: '8px 12px'
-                    }}
-                    onClick={() => setGoogleStep('chooser')}
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="button"
-                    style={{
-                      background: '#1a73e8',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '24px',
-                      padding: '10px 24px',
-                      fontSize: '0.88rem',
-                      fontWeight: 500,
-                      cursor: 'pointer'
-                    }}
-                    disabled={oauthDialog.step === 'authorizing'}
-                    onClick={() => handleGoogleSubmit(activeGoogleUser)}
-                  >
-                    {oauthDialog.step === 'authorizing' ? 'Signing in...' : 'Sign in'}
-                  </button>
-                </div>
+                    <div style={{
+                      position: 'relative',
+                      border: isInputFocused ? '2px solid #8ab4f8' : '1px solid #8e918f',
+                      borderRadius: '4px',
+                      padding: '12px 14px',
+                      background: 'transparent',
+                      transition: 'border 0.2s ease'
+                    }}>
+                      <label style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        left: '10px',
+                        background: '#1f1f1f',
+                        padding: '0 4px',
+                        fontSize: '0.75rem',
+                        color: isInputFocused ? '#8ab4f8' : '#9aa0a6',
+                        fontWeight: 500
+                      }}>
+                        Enter your password
+                      </label>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        autoFocus
+                        placeholder="••••••••"
+                        value={googlePassword}
+                        onChange={(e) => setGooglePassword(e.target.value)}
+                        onFocus={() => setIsInputFocused(true)}
+                        onBlur={() => setIsInputFocused(false)}
+                        style={{
+                          width: '100%',
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#e8eaed',
+                          fontSize: '1rem',
+                          outline: 'none',
+                          fontFamily: 'inherit'
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleGoogleSubmit(googleCustomEmail);
+                          }
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                      <input
+                        type="checkbox"
+                        id="show-pass-check"
+                        checked={showPassword}
+                        onChange={(e) => setShowPassword(e.target.checked)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <label htmlFor="show-pass-check" style={{ fontSize: '0.82rem', color: '#e8eaed', cursor: 'pointer' }}>
+                        Show password
+                      </label>
+                    </div>
+
+                    {/* Bottom Action Buttons */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: '36px'
+                    }}>
+                      <button
+                        type="button"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#8ab4f8',
+                          fontSize: '0.88rem',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          padding: '8px 0'
+                        }}
+                        onClick={() => setGoogleStep('email')}
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        type="button"
+                        style={{
+                          background: '#8ab4f8',
+                          color: '#001d35',
+                          border: 'none',
+                          borderRadius: '20px',
+                          padding: '10px 28px',
+                          fontSize: '0.88rem',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                        disabled={oauthDialog.step === 'authorizing'}
+                        onClick={() => handleGoogleSubmit(googleCustomEmail)}
+                      >
+                        {oauthDialog.step === 'authorizing' ? 'Signing in...' : 'Sign in'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Google Footer info bar */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderTop: '1px solid #3c4043',
+              marginTop: '32px',
+              paddingTop: '16px',
+              fontSize: '0.78rem',
+              color: '#9aa0a6'
+            }}>
+              <span>English (United States)</span>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <span>Help</span>
+                <span>Privacy</span>
+                <span>Terms</span>
+              </div>
+            </div>
           </div>
         ) : oauthDialog ? (
           /* University SSO / GitHub Authorization Dialog */
@@ -682,7 +589,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 >
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Mohammed Negash</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>mnegash@student.gsu.edu • Georgia State University</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>mnegash.edu@gmail.com • Georgia State University</div>
                   </div>
                   {selectedAccount === 'mohammed' && <CheckCircle2 size={16} color="#818cf8" />}
                 </div>
@@ -702,7 +609,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 >
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>DeMarcus Cole</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>dcole12@student.gsu.edu • Georgia State University</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>dcole12@gmail.com • Georgia State University</div>
                   </div>
                   {selectedAccount === 'demarcus' && <CheckCircle2 size={16} color="#818cf8" />}
                 </div>
@@ -721,7 +628,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                   <input
                     type="email"
                     className="form-input"
-                    placeholder="your.name@student.gsu.edu"
+                    placeholder="your.email@gmail.com"
                     value={customEmail}
                     onChange={(e) => {
                       setSelectedAccount('custom');
@@ -926,7 +833,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 <input
                   type="email"
                   className="form-input"
-                  placeholder="name@example.com"
+                  placeholder="mnegash.edu@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
