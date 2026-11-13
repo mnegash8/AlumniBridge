@@ -50,7 +50,7 @@ export default function JudgeModal({ isOpen, onClose, onSelectPreset }) {
           fontStyle: 'italic',
           color: '#e0e7ff'
         }}>
-          “Our app helps students find alumni who have been where they are. Students upload their résumé and share their goals, and AI recommends relevant mentors from their school with clear reasons for each match. Students can then compare prices and book a session focused on a specific outcome, such as improving their résumé or planning their first project.”
+          “Our app helps students find alumni who have been where they are. Students upload their resume and share their goals, and AI recommends relevant mentors from their school with clear reasons for each match. Students can then compare free sessions and book a session focused on a specific outcome, such as improving their resume or planning their first project.”
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', margin: '20px 0' }}>

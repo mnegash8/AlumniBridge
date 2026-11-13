@@ -173,7 +173,7 @@ export default function App() {
             onClick={() => setCurrentStep(1)}
           >
             <div className="step-number">{currentStep > 1 ? '✓' : '1'}</div>
-            <span className="step-title">Upload Résumé & Goals</span>
+            <span className="step-title">Upload Resume & Goals</span>
           </div>
 
           <ChevronRight size={16} color="var(--border-subtle)" />

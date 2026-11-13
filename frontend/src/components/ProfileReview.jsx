@@ -74,7 +74,7 @@ export default function ProfileReview({ initialData, onConfirm, onBack, isLoadin
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '0.82rem', fontWeight: 700 }}>
-              <Check size={16} /> Résumé Analyzed Successfully
+              <Check size={16} /> Resume Analyzed Successfully
             </div>
             <h2 style={{ fontSize: '1.6rem', marginTop: '4px' }}>Confirm Your Profile & Goals</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>

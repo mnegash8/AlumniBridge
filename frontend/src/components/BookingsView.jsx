@@ -28,7 +28,7 @@ export default function BookingsView({ bookings = [], onFindMentors }) {
         </div>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>No Mentorship Bookings Yet</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', marginBottom: '24px' }}>
-          Upload your résumé or load a sample student profile to discover and book sessions with alumni mentors.
+          Upload your resume or load a sample student profile to discover and book sessions with alumni mentors.
         </p>
         <button className="btn-primary" onClick={onFindMentors}>
           <Sparkles size={16} /> Find Matched Alumni

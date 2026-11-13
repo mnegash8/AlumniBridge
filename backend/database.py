@@ -28,7 +28,7 @@ INITIAL_MENTORS: List[Dict[str, Any]] = [
         "services": [
             {
                 "id": "s13_1",
-                "title": "Panther Résumé Roast & ATS Optimization",
+                "title": "Panther Resume Roast & ATS Optimization",
                 "duration": "30 mins",
                 "price": 0,
                 "description": "Line-by-line review of your projects and coursework tailored to pass Big Tech and Atlanta startup ATS filters.",

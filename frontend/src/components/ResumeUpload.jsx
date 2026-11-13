@@ -92,7 +92,7 @@ export default function ResumeUpload({ onProfileParsed, onSelectPreset, presets 
           Connect with Alumni who have <span className="gradient-accent">walked your path</span>.
         </h1>
         <p className="hero-desc">
-          Upload your résumé and share your goals. Our AI matches you with alumni from your school — including{' '}
+          Upload your resume and share your goals. Our AI matches you with alumni from your school — including{' '}
           <strong style={{ color: '#38bdf8' }}>Georgia State University</strong>, UC Berkeley, NYU, and more — who
           overcame the exact same hurdles to give you free guidance.
         </p>
@@ -120,7 +120,7 @@ export default function ResumeUpload({ onProfileParsed, onSelectPreset, presets 
                 {isLoading ? <RefreshCw className="animate-spin" size={32} /> : <UploadCloud size={32} />}
               </div>
               <h3 className="dropzone-title">
-                {isLoading ? 'Extracting Resume Insights with pypdf...' : 'Drop your résumé here or click to browse'}
+                {isLoading ? 'Extracting Resume Insights with pypdf...' : 'Drop your resume here or click to browse'}
               </h3>
               <p className="dropzone-subtitle">
                 Text-based PDF format (.pdf) • Analyzes university, coursework, target roles, and strengths

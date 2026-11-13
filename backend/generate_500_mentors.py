@@ -185,7 +185,7 @@ def generate_mentors(target_count=500):
         services = [
             {
                 "id": f"s_{mentor_id_counter}_1",
-                "title": f"{school_shorthand} Résumé Roast & ATS Optimization",
+                "title": f"{school_shorthand} Resume Roast & ATS Optimization",
                 "duration": "30 mins",
                 "price": 0,
                 "description": f"Detailed review of your {major.lower()} resume bullets and formatting tailored to pass recruiter ATS screens at {company} and peer firms.",
