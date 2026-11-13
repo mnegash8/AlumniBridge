@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+backend/venv/
+backend/__pycache__/
+*.pyc
+
+# Environment & OS files
+.DS_Store
+.env
+*.log
+
+# Build outputs
+frontend/dist/
+frontend/.vite/
+
+# Database (auto-generated on startup by init_db())
+backend/alumnibridge.db

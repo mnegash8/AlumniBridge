@@ -1,0 +1,240 @@
+import React, { useState, useEffect } from 'react';
+import Navbar from './components/Navbar';
+import ResumeUpload from './components/ResumeUpload';
+import ProfileReview from './components/ProfileReview';
+import MentorList from './components/MentorList';
+import BookingModal from './components/BookingModal';
+import BookingsView from './components/BookingsView';
+import JudgeModal from './components/JudgeModal';
+import { Sparkles, CheckCircle2, ChevronRight, GraduationCap } from 'lucide-react';
+import './App.css';
+
+const API_BASE = 'http://localhost:8000/api';
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('match'); // 'match' | 'explore' | 'bookings'
+  const [currentStep, setCurrentStep] = useState(1); // 1: Upload, 2: Review, 3: Recommendations
+  
+  const [allMentors, setAllMentors] = useState([]);
+  const [rankedMatches, setRankedMatches] = useState([]);
+  const [studentProfile, setStudentProfile] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  
+  const [selectedMentorForBooking, setSelectedMentorForBooking] = useState(null);
+  const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch initial mentors & bookings
+  useEffect(() => {
+    fetchMentors();
+    fetchBookings();
+  }, []);
+
+  const fetchMentors = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/mentors`);
+      if (res.ok) {
+        const data = await res.json();
+        setAllMentors(data.mentors || []);
+      }
+    } catch (e) {
+      console.warn('API fetch mentors error:', e);
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/bookings`);
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data.bookings || []);
+      }
+    } catch (e) {
+      console.warn('API fetch bookings error:', e);
+    }
+  };
+
+  // Step 1: Handle parsed resume from PDF or Text
+  const handleProfileParsed = (parsedData) => {
+    setStudentProfile(parsedData);
+    setCurrentStep(2);
+  };
+
+  // Handle Preset Selection (e.g. Jordan Miller, Samantha Cruz)
+  const handleSelectPreset = async (presetId) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/samples`);
+      if (res.ok) {
+        const data = await res.json();
+        const profile = data.sample_profiles?.find((p) => p.id === presetId);
+        if (profile) {
+          setStudentProfile(profile);
+          setCurrentStep(2);
+          setActiveTab('match');
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 2: Confirm Profile and Trigger Match
+  const handleProfileConfirm = async (confirmedProfile) => {
+    setIsLoading(true);
+    setStudentProfile(confirmedProfile);
+    try {
+      const res = await fetch(`${API_BASE}/match`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(confirmedProfile)
+      });
+      if (!res.ok) throw new Error('Matching failed');
+      const data = await res.json();
+      setRankedMatches(data.matches || []);
+      setCurrentStep(3);
+    } catch (err) {
+      console.error(err);
+      alert('Error fetching matches. Showing all available mentors.');
+      setRankedMatches(allMentors.map((m) => ({ mentor: m, match_score: 85 })));
+      setCurrentStep(3);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Booking Success
+  const handleBookingSuccess = (newBooking) => {
+    setBookings((prev) => [newBooking, ...prev]);
+  };
+
+  return (
+    <div className="app-container">
+      {/* Navigation */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+        }}
+        bookingsCount={bookings.length}
+        onOpenJudgeModal={() => setIsJudgeModalOpen(true)}
+      />
+
+      {/* Stepper Bar (Only in Match flow) */}
+      {activeTab === 'match' && (
+        <div className="stepper-bar">
+          <div
+            className={`step-node ${currentStep === 1 ? 'active' : currentStep > 1 ? 'completed' : ''}`}
+            onClick={() => setCurrentStep(1)}
+          >
+            <div className="step-number">{currentStep > 1 ? '✓' : '1'}</div>
+            <span className="step-title">Upload Résumé & Goals</span>
+          </div>
+
+          <ChevronRight size={16} color="var(--border-subtle)" />
+
+          <div
+            className={`step-node ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : ''}`}
+            onClick={() => studentProfile && setCurrentStep(2)}
+          >
+            <div className="step-number">{currentStep > 2 ? '✓' : '2'}</div>
+            <span className="step-title">Confirm Profile & School</span>
+          </div>
+
+          <ChevronRight size={16} color="var(--border-subtle)" />
+
+          <div
+            className={`step-node ${currentStep === 3 ? 'active' : ''}`}
+          >
+            <div className="step-number">3</div>
+            <span className="step-title">AI Matches & Reasons</span>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <main className="main-content">
+        {activeTab === 'match' && (
+          <>
+            {currentStep === 1 && (
+              <ResumeUpload
+                onProfileParsed={handleProfileParsed}
+                onSelectPreset={handleSelectPreset}
+                isLoading={isLoading}
+              />
+            )}
+
+            {currentStep === 2 && (
+              <ProfileReview
+                initialData={studentProfile}
+                onConfirm={handleProfileConfirm}
+                onBack={() => setCurrentStep(1)}
+                isLoading={isLoading}
+              />
+            )}
+
+            {currentStep === 3 && (
+              <MentorList
+                matches={rankedMatches.length > 0 ? rankedMatches : allMentors.map((m) => ({ mentor: m, match_score: 88 }))}
+                studentProfile={studentProfile}
+                onSelectMentor={(item) => setSelectedMentorForBooking(item)}
+                onEditProfile={() => setCurrentStep(2)}
+              />
+            )}
+          </>
+        )}
+
+        {/* Explore All 12 Mentors Tab */}
+        {activeTab === 'explore' && (
+          <MentorList
+            matches={allMentors.map((m) => ({
+              mentor: m,
+              match_score: 90,
+              reasons: [
+                `Verified alumni from ${m.school}`,
+                `${m.role} at ${m.company}`,
+                `Overcame: ${m.challenges_overcome?.[0] || 'Competitive recruitment'}`
+              ],
+              ai_explanation: `${m.name} is a ${m.school} graduate currently working as ${m.role} at ${m.company}.`
+            }))}
+            studentProfile={studentProfile}
+            onSelectMentor={(item) => setSelectedMentorForBooking(item)}
+            onEditProfile={() => {
+              setActiveTab('match');
+              setCurrentStep(2);
+            }}
+          />
+        )}
+
+        {/* My Bookings Tab */}
+        {activeTab === 'bookings' && (
+          <BookingsView
+            bookings={bookings}
+            onFindMentors={() => {
+              setActiveTab('match');
+              setCurrentStep(1);
+            }}
+          />
+        )}
+      </main>
+
+      {/* Booking Modal */}
+      <BookingModal
+        mentorData={selectedMentorForBooking}
+        studentProfile={studentProfile}
+        isOpen={!!selectedMentorForBooking}
+        onClose={() => setSelectedMentorForBooking(null)}
+        onBookingSuccess={handleBookingSuccess}
+      />
+
+      {/* Judge Pitch & Demo Modal */}
+      <JudgeModal
+        isOpen={isJudgeModalOpen}
+        onClose={() => setIsJudgeModalOpen(false)}
+        onSelectPreset={handleSelectPreset}
+      />
+    </div>
+  );
+}
