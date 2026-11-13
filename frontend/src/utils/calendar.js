@@ -85,6 +85,7 @@ export function generateGoogleCalendarUrl({
   sessionTime = '4:00 PM EST',
   durationMinutes = 45,
   prepQuestions = [],
+  sessionFocus = null,
   bookingId = 'AB-101',
   meetUrl = 'https://meet.google.com/ab-mentorship'
 }) {
@@ -99,6 +100,23 @@ export function generateGoogleCalendarUrl({
   details += `• Topic/Service: ${serviceTitle}\n`;
   details += `• Booking Reference: ${bookingId}\n`;
   details += `• Virtual Room: ${meetUrl}\n\n`;
+
+  if (sessionFocus) {
+    if (sessionFocus.key_focus_areas && sessionFocus.key_focus_areas.length > 0) {
+      details += `🎯 WHAT TO TALK ABOUT & FOCUS ON:\n`;
+      sessionFocus.key_focus_areas.forEach((fa) => {
+        details += `• ${fa}\n`;
+      });
+      details += `\n`;
+    }
+    if (sessionFocus.discussion_agenda && sessionFocus.discussion_agenda.length > 0) {
+      details += `⏱️ SUGGESTED AGENDA:\n`;
+      sessionFocus.discussion_agenda.forEach((step) => {
+        details += `• ${step.phase} - ${step.title}: ${step.focus}\n`;
+      });
+      details += `\n`;
+    }
+  }
 
   if (prepQuestions && prepQuestions.length > 0) {
     details += `📋 AI Recommended Questions for this Call:\n`;
@@ -134,6 +152,7 @@ export function downloadIcsFile({
   sessionTime = '4:00 PM EST',
   durationMinutes = 45,
   prepQuestions = [],
+  sessionFocus = null,
   bookingId = 'AB-101',
   meetUrl = 'https://meet.google.com/ab-mentorship'
 }) {
@@ -146,6 +165,24 @@ export function downloadIcsFile({
   const location = `Google Meet / Virtual (${meetUrl})`;
 
   let desc = `AlumniBridge 1-on-1 Mentorship Session\\n\\nMentor: ${mentorName} ${mentorCompany ? `(${mentorCompany})` : ''}\\nService: ${serviceTitle}\\nBooking ID: ${bookingId}\\nMeeting URL: ${meetUrl}\\n\\n`;
+
+  if (sessionFocus) {
+    if (sessionFocus.key_focus_areas && sessionFocus.key_focus_areas.length > 0) {
+      desc += `WHAT TO TALK ABOUT & FOCUS ON:\\n`;
+      sessionFocus.key_focus_areas.forEach((fa) => {
+        desc += `• ${fa.replace(/,/g, '\\,')}\\n`;
+      });
+      desc += `\\n`;
+    }
+    if (sessionFocus.discussion_agenda && sessionFocus.discussion_agenda.length > 0) {
+      desc += `SESSION AGENDA:\\n`;
+      sessionFocus.discussion_agenda.forEach((step) => {
+        desc += `• ${step.phase}: ${step.title.replace(/,/g, '\\,')}\\n`;
+      });
+      desc += `\\n`;
+    }
+  }
+
   if (prepQuestions && prepQuestions.length > 0) {
     desc += `AI Preparation Questions:\\n`;
     prepQuestions.forEach((q, i) => {

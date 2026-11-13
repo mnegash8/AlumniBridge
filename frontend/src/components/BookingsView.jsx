@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video, Play, Pause, Mic, Zap, FileText } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video, Play, Pause, Mic, Zap, FileText, Target, ListChecks, Lightbulb } from 'lucide-react';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
 export default function BookingsView({ bookings = [], onFindMentors, currentUser }) {
@@ -280,6 +280,7 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                     sessionDate: b.session_date,
                     sessionTime: b.session_time,
                     prepQuestions: b.prep_questions,
+                    sessionFocus: b.session_focus,
                     bookingId: b.id
                   })}
                   target="_blank"
@@ -316,6 +317,7 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                     sessionDate: b.session_date,
                     sessionTime: b.session_time,
                     prepQuestions: b.prep_questions,
+                    sessionFocus: b.session_focus,
                     bookingId: b.id
                   })}
                 >
@@ -343,6 +345,139 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                 </a>
               </div>
             )}
+
+            {/* What to Talk About & Focus On */}
+            {(() => {
+              const focus = b.session_focus || {
+                mentor_welcome: `Hey ${b.student_name?.split(' ')[0] || 'there'}! Looking forward to our session. As an alum from ${b.student_school || 'your university'}, I know how competitive recruitment can feel. Here is our exact focus roadmap for our ${b.service_title} session.`,
+                key_focus_areas: [
+                  `Reviewing your ${b.student_major || 'major'} coursework and projects to pass recruiter screenings.`,
+                  `Overcoming state university friction from ${b.student_school || 'your university'} to land competitive tech & corporate roles.`,
+                  `Actionable interview preparation, recruiter screening patterns, and cold outreach strategy.`
+                ],
+                discussion_agenda: [
+                  {
+                    phase: "Part 1 (First 5-10 mins)",
+                    title: "Icebreaker & Background Alignment",
+                    focus: `Connect on shared university experiences. Clarify your career targets and learn how ${b.mentor_name} navigated their career.`
+                  },
+                  {
+                    phase: "Part 2 (15-25 mins)",
+                    title: `Tactical Focus: ${b.service_title}`,
+                    focus: `Live screen-share and review. ${b.mentor_name} will roast bullet points, flag ATS risks, and rewrite low-impact statements with high-yield metrics.`
+                  },
+                  {
+                    phase: "Part 3 (Final 5-10 mins)",
+                    title: "7-Day Action Plan & Next Steps",
+                    focus: `Agree on 3 immediate revisions to complete this week, and establish next steps for follow-up.`
+                  }
+                ],
+                mentor_pro_tip: `“Don't hesitate to ask candid questions about salary, company culture, or balancing school with recruiting. As alumni, we're here to give you the honest playbook!” — ${b.mentor_name}`
+              };
+
+              return (
+                <div style={{
+                  background: 'rgba(15, 23, 42, 0.75)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  borderRadius: '12px',
+                  padding: '16px 18px',
+                  marginTop: '14px',
+                  marginBottom: '14px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.9rem' }}>
+                      <Target size={16} />
+                      <span>What to Talk About & Focus On with {b.mentor_name}</span>
+                    </div>
+                    <span style={{
+                      fontSize: '0.72rem',
+                      color: '#6ee7b7',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(16, 185, 129, 0.2)'
+                    }}>
+                      Session Roadmap
+                    </span>
+                  </div>
+
+                  {/* Mentor Note */}
+                  <p style={{
+                    fontSize: '0.82rem',
+                    color: '#f1f5f9',
+                    lineHeight: 1.45,
+                    fontStyle: 'italic',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    borderLeft: '3px solid #38bdf8',
+                    margin: '0 0 12px 0'
+                  }}>
+                    “{focus.mentor_welcome}”
+                  </p>
+
+                  {/* Focus Areas */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ListChecks size={13} color="#38bdf8" /> Key Discussion Focus Areas:
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {focus.key_focus_areas.map((fa, fIdx) => (
+                        <div key={fIdx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.82rem', color: '#cbd5e1' }}>
+                          <span style={{ color: '#10b981', fontWeight: 700 }}>✓</span>
+                          <span>{fa}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Discussion Agenda */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '8px',
+                    marginBottom: '10px'
+                  }}>
+                    {focus.discussion_agenda.map((ag, aIdx) => (
+                      <div key={aIdx} style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '6px',
+                        padding: '8px 10px'
+                      }}>
+                        <div style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700 }}>
+                          {ag.phase}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f8fafc' }}>
+                          {ag.title}
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '3px 0 0 0', lineHeight: 1.3 }}>
+                          {ag.focus}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Alumni Pro Tip */}
+                  {focus.mentor_pro_tip && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'rgba(245, 158, 11, 0.08)',
+                      border: '1px solid rgba(245, 158, 11, 0.2)',
+                      borderRadius: '6px',
+                      padding: '6px 10px',
+                      fontSize: '0.76rem',
+                      color: '#fef3c7'
+                    }}>
+                      <Lightbulb size={14} color="#fbbf24" style={{ flexShrink: 0 }} />
+                      <span>{focus.mentor_pro_tip}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* AI Session Prep Questions for this booking */}
             {b.prep_questions && b.prep_questions.length > 0 && (

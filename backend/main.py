@@ -201,6 +201,39 @@ def book_mentor_session(payload: BookingRequest):
             "recommended_next_step": "Implement these bullet rewrites on your master PDF and submit for summer sophomore internship cycles."
         }
 
+    # Construct tailored guidance on what to talk about and focus on
+    student_first_name = (payload.student_name.split()[0] if payload.student_name else "Student").strip()
+    student_school = payload.student_school or mentor["school"]
+    student_major = payload.student_major or "Computer Science"
+    target_role = payload.student_goals or "Tech & Corporate Opportunities"
+
+    session_focus = {
+        "mentor_welcome": f"Hey {student_first_name}! Looking forward to connecting with you. As an alum from {mentor['school']}, I remember how overwhelming recruitment was as an underclassman. For our '{selected_service['title']}' session, here is our game plan so we make every minute count.",
+        "key_focus_areas": [
+            f"Tailoring your {student_major} coursework and projects to pass recruiter screenings at {mentor['company']}.",
+            f"Overcoming recruitment hurdles specific to students from {student_school} (networking, career fairs, and standing out against 1,000+ applicants).",
+            f"Actionable strategies for {target_role}: behavioral STAR framing, technical interview patterns, and cold outreach."
+        ],
+        "discussion_agenda": [
+            {
+                "phase": "Part 1 (First 5-10 mins)",
+                "title": "Icebreaker & Background Context",
+                "focus": f"Introduce your story at {student_school}, your primary goals, and hear {mentor['name']}'s journey from university to {mentor['role']} at {mentor['company']}."
+            },
+            {
+                "phase": "Part 2 (15-25 mins)",
+                "title": f"Tactical Focus: {selected_service['title']}",
+                "focus": f"Deep dive into your resume bullets and portfolio. {mentor['name']} will identify red flags, rewrite low-impact points using the Google X-Y-Z formula, and share hiring expectations."
+            },
+            {
+                "phase": "Part 3 (Final 5-10 mins)",
+                "title": "7-Day Action Plan & Next Steps",
+                "focus": f"Lock in your 3 highest-leverage revisions to execute this week. Ask for permission to send a follow-up LinkedIn message to {mentor['name']} once revised."
+            }
+        ],
+        "mentor_pro_tip": f"“Don't hold back on the real questions about compensation, team culture, or overcoming imposter syndrome. As alumni, our job is to give you the honest, unfiltered playbook!” — {mentor['name']}"
+    }
+
     booking_record = {
         "id": booking_id,
         "username": payload.username.strip().lower() if payload.username else None,
@@ -220,7 +253,8 @@ def book_mentor_session(payload: BookingRequest):
         "payment_status": "PAID_CONFIRMED (Simulated $0.00 Demo)",
         "prep_questions": match_info["prep_questions"],
         "session_format": session_format,
-        "async_feedback": async_feedback
+        "async_feedback": async_feedback,
+        "session_focus": session_focus
     }
     
     saved = create_booking(booking_record)

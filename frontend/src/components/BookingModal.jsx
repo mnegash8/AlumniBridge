@@ -16,7 +16,11 @@ import {
   Video,
   Zap,
   Mic,
-  FileText
+  FileText,
+  MessageSquare,
+  Target,
+  Lightbulb,
+  ListChecks
 } from 'lucide-react';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
@@ -441,6 +445,155 @@ export default function BookingModal({
               </div>
             </div>
 
+            {/* What to Talk About & Focus On Section */}
+            {(() => {
+              const focus = bookingConfirmed.booking?.session_focus || {
+                mentor_welcome: `Hey ${currentUser?.name?.split(' ')[0] || studentProfile?.name?.split(' ')[0] || 'there'}! Looking forward to connecting. As an alum from ${mentor.school}, I know how competitive recruitment can feel. Here is our exact focus roadmap for our ${bookingConfirmed.service?.title} session.`,
+                key_focus_areas: [
+                  `Reviewing your ${studentProfile?.major || mentor.major} coursework and projects to pass recruiter screenings at ${mentor.company}.`,
+                  `Overcoming state university friction from ${studentProfile?.school || mentor.school} to land competitive roles like at ${mentor.company}.`,
+                  `Actionable interview preparation, recruiter screening patterns, and cold outreach strategy.`
+                ],
+                discussion_agenda: [
+                  {
+                    phase: "Part 1 (First 5-10 mins)",
+                    title: "Icebreaker & Background Alignment",
+                    focus: `Connect on shared university experiences at ${mentor.school}. Clarify your career targets and learn how ${mentor.name} navigated their path to ${mentor.company}.`
+                  },
+                  {
+                    phase: "Part 2 (15-25 mins)",
+                    title: `Tactical Focus: ${bookingConfirmed.service?.title}`,
+                    focus: `Live screen-share and review. ${mentor.name} will roast bullet points, flag ATS risks, and rewrite low-impact statements with high-yield metrics.`
+                  },
+                  {
+                    phase: "Part 3 (Final 5-10 mins)",
+                    title: "7-Day Action Plan & Next Steps",
+                    focus: `Agree on 3 immediate revisions to complete this week, and establish next steps for follow-up.`
+                  }
+                ],
+                mentor_pro_tip: `“Don't hesitate to ask candid questions about salary, company culture, or balancing school with recruiting. As alumni, we're here to give you the honest playbook!” — ${mentor.name}`
+              };
+
+              return (
+                <div style={{
+                  background: 'rgba(15, 23, 42, 0.75)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  borderRadius: '14px',
+                  padding: '20px',
+                  margin: '18px 0',
+                  textAlign: 'left'
+                }}>
+                  {/* Header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 700, fontSize: '0.96rem' }}>
+                      <Target size={18} />
+                      <span>What to Talk About & Focus On with {mentor.name}</span>
+                    </div>
+                    <span style={{
+                      fontSize: '0.74rem',
+                      color: '#6ee7b7',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(16, 185, 129, 0.25)',
+                      fontWeight: 600
+                    }}>
+                      Personalized Roadmap
+                    </span>
+                  </div>
+
+                  {/* Mentor's Note */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'flex-start',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    borderLeft: '3px solid #38bdf8',
+                    marginBottom: '14px'
+                  }}>
+                    <img
+                      src={mentor.avatar}
+                      alt={mentor.name}
+                      style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                      onError={(e) => {
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=6366f1&color=fff&size=64`;
+                      }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.76rem', color: '#94a3b8', fontWeight: 600, marginBottom: '2px' }}>
+                        Message from {mentor.name} ({mentor.role} @ {mentor.company}):
+                      </div>
+                      <p style={{ fontSize: '0.84rem', color: '#f1f5f9', lineHeight: 1.45, margin: 0, fontStyle: 'italic' }}>
+                        "{focus.mentor_welcome}"
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Key Focus Topics */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ListChecks size={14} color="#38bdf8" /> Key Topics to Focus On:
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {focus.key_focus_areas.map((area, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.84rem', color: '#cbd5e1', lineHeight: 1.4 }}>
+                          <span style={{ color: '#10b981', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                          <span>{area}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3-Part Discussion Agenda */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Clock size={14} color="#818cf8" /> Recommended Session Agenda:
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '8px' }}>
+                      {focus.discussion_agenda.map((ag, i) => (
+                        <div key={i} style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          padding: '10px 12px'
+                        }}>
+                          <div style={{ fontSize: '0.74rem', color: '#818cf8', fontWeight: 700 }}>
+                            {ag.phase}
+                          </div>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#f8fafc', marginTop: '2px' }}>
+                            {ag.title}
+                          </div>
+                          <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', lineHeight: 1.35, margin: '4px 0 0 0' }}>
+                            {ag.focus}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mentor Pro-Tip */}
+                  {focus.mentor_pro_tip && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'rgba(245, 158, 11, 0.08)',
+                      border: '1px solid rgba(245, 158, 11, 0.25)',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      fontSize: '0.8rem',
+                      color: '#fef3c7'
+                    }}>
+                      <Lightbulb size={16} color="#fbbf24" style={{ flexShrink: 0 }} />
+                      <span style={{ lineHeight: 1.4 }}>{focus.mentor_pro_tip}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* AI Session Prep Guide */}
             <div className="prep-questions-card">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#818cf8', fontWeight: 700, fontSize: '0.9rem' }}>
@@ -538,6 +691,7 @@ export default function BookingModal({
                       sessionDate: bookingConfirmed.booking?.session_date,
                       sessionTime: bookingConfirmed.booking?.session_time,
                       prepQuestions: bookingConfirmed.booking?.prep_questions,
+                      sessionFocus: bookingConfirmed.booking?.session_focus,
                       bookingId: bookingConfirmed.booking?.id
                     })}
                     target="_blank"
@@ -575,6 +729,7 @@ export default function BookingModal({
                       sessionDate: bookingConfirmed.booking?.session_date,
                       sessionTime: bookingConfirmed.booking?.session_time,
                       prepQuestions: bookingConfirmed.booking?.prep_questions,
+                      sessionFocus: bookingConfirmed.booking?.session_focus,
                       bookingId: bookingConfirmed.booking?.id
                     })}
                   >

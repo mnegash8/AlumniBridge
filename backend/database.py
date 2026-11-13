@@ -605,6 +605,10 @@ def init_db(force_reseed: bool = True):
         cursor.execute("ALTER TABLE bookings ADD COLUMN async_feedback TEXT")
     except Exception:
         pass
+    try:
+        cursor.execute("ALTER TABLE bookings ADD COLUMN session_focus TEXT")
+    except Exception:
+        pass
 
     # Backfill legacy bookings without a username to mnegash
     cursor.execute("UPDATE bookings SET username = 'mnegash' WHERE username IS NULL")
@@ -752,8 +756,8 @@ def create_booking(data: Dict[str, Any]) -> Dict[str, Any]:
         id, username, mentor_id, mentor_name, student_name, student_email,
         student_school, student_major, service_id, service_title,
         service_price, session_date, session_time, student_goals,
-        student_notes, payment_status, prep_questions, session_format, async_feedback
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        student_notes, payment_status, prep_questions, session_format, async_feedback, session_focus
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data["id"],
         data.get("username"),
@@ -773,7 +777,8 @@ def create_booking(data: Dict[str, Any]) -> Dict[str, Any]:
         data.get("payment_status", "100% FREE (Alumni Mentorship)"),
         json.dumps(data.get("prep_questions", [])),
         data.get("session_format", "LIVE_CALL"),
-        json.dumps(data.get("async_feedback")) if data.get("async_feedback") else None
+        json.dumps(data.get("async_feedback")) if data.get("async_feedback") else None,
+        json.dumps(data.get("session_focus")) if data.get("session_focus") else None
     ))
     conn.commit()
     conn.close()
@@ -814,6 +819,7 @@ def get_all_bookings(username: Optional[str] = None) -> List[Dict[str, Any]]:
             "prep_questions": json.loads(r["prep_questions"]) if r["prep_questions"] else [],
             "session_format": r["session_format"] if "session_format" in r.keys() and r["session_format"] else "LIVE_CALL",
             "async_feedback": json.loads(r["async_feedback"]) if ("async_feedback" in r.keys() and r["async_feedback"]) else None,
+            "session_focus": json.loads(r["session_focus"]) if ("session_focus" in r.keys() and r["session_focus"]) else None,
             "created_at": r["created_at"]
         })
     conn.close()
