@@ -24,8 +24,14 @@
    - Features 14 realistic alumni mentors spanning **Google, Mailchimp, Deloitte, Blackstone, Anthropic, Stripe, Jane Street, McKinsey, and Spotify**.
 4. ** 100% Free Outcome-Focused Sessions**
    - Compare sessions like *Panther Resume Roast*, *Internship Gameplan*, or *Mock Technical Screens* ($0 / Free).
-5. ** AI Session Prep Toolkit**
+5. **🤖 AI Session Prep Toolkit**
    - Generates 3 tailored questions specifically customized to the mentor’s background for the student to ask on the call.
+6. **🔐 SQLite-Backed Authentication & Persistence**
+   - SHA-256 password hashing with cryptographic salts; strict credential verification against the SQLite database.
+7. **📅 1-Click Google Calendar & `.ics` Sync**
+   - Instant calendar integration with pre-filled Google Meet links, session deliverables, and AI prep questions.
+8. **👤 Account-Linked Mentorship Bookings**
+   - Bookings are strictly tied to the logged-in student account with private dashboard access.
 
 ---
 
