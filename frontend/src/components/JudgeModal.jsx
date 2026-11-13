@@ -28,6 +28,16 @@ export default function JudgeModal({ isOpen, onClose, onSelectPreset }) {
           </div>
         </div>
 
+        {/* Team Members */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', margin: '4px 0 14px' }}>
+          <span style={{ fontSize: '0.78rem', color: '#a5b4fc', fontWeight: 700, textTransform: 'uppercase' }}>Built by:</span>
+          {['Mohammed Negash', 'Roger Guiberto', 'Akshitha Podichetty', 'Yahwensi Legesse'].map((name) => (
+            <span key={name} className="badge badge-company" style={{ fontSize: '0.8rem', color: '#f8fafc', background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+              👤 {name}
+            </span>
+          ))}
+        </div>
+
         {/* Official Pitch Quote Box */}
         <div style={{
           background: 'rgba(99, 102, 241, 0.1)',

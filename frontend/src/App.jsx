@@ -220,6 +220,24 @@ export default function App() {
         )}
       </main>
 
+      {/* Footer */}
+      <footer style={{
+        textAlign: 'center',
+        padding: '24px 16px',
+        borderTop: '1px solid var(--border-subtle)',
+        background: 'rgba(8, 12, 22, 0.6)',
+        color: 'var(--text-dim)',
+        fontSize: '0.82rem'
+      }}>
+        <div>
+          AlumniBridge • Built by{' '}
+          <strong style={{ color: '#e2e8f0' }}>Mohammed Negash</strong>,{' '}
+          <strong style={{ color: '#e2e8f0' }}>Roger Guiberto</strong>,{' '}
+          <strong style={{ color: '#e2e8f0' }}>Akshitha Podichetty</strong>, and{' '}
+          <strong style={{ color: '#e2e8f0' }}>Yahwensi Legesse</strong>
+        </div>
+      </footer>
+
       {/* Booking Modal */}
       <BookingModal
         mentorData={selectedMentorForBooking}
