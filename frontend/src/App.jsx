@@ -151,6 +151,7 @@ export default function App() {
     localStorage.removeItem('ab_user');
     setCurrentUser(null);
     setBookings([]);
+    setActiveTab('match');
     setIsAuthModalOpen(true);
   };
 
@@ -260,8 +261,8 @@ export default function App() {
           />
         )}
 
-        {/* My Bookings Tab */}
-        {activeTab === 'bookings' && (
+        {/* My Bookings Tab (Only accessible when logged in) */}
+        {activeTab === 'bookings' && currentUser && (
           <BookingsView
             bookings={bookings}
             currentUser={currentUser}

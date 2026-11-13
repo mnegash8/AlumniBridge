@@ -47,26 +47,28 @@ export default function Navbar({
             <span>Browse All (500)</span>
           </button>
 
-          <button
-            id="nav-btn-bookings"
-            className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('bookings')}
-          >
-            <Calendar size={16} />
-            <span>My Bookings</span>
-            {bookingsCount > 0 && (
-              <span style={{
-                background: '#10b981',
-                color: '#ffffff',
-                borderRadius: '9999px',
-                padding: '1px 6px',
-                fontSize: '0.72rem',
-                fontWeight: 700
-              }}>
-                {bookingsCount}
-              </span>
-            )}
-          </button>
+          {currentUser && (
+            <button
+              id="nav-btn-bookings"
+              className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('bookings')}
+            >
+              <Calendar size={16} />
+              <span>My Bookings</span>
+              {bookingsCount > 0 && (
+                <span style={{
+                  background: '#10b981',
+                  color: '#ffffff',
+                  borderRadius: '9999px',
+                  padding: '1px 6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
+                  {bookingsCount}
+                </span>
+              )}
+            </button>
+          )}
         </nav>
 
         <div className="nav-actions">
