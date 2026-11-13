@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sparkles, Check, ArrowLeft, Gift, Target, GraduationCap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Check, ArrowLeft, Gift, Target, GraduationCap, FileText, X, Plus, Code2 } from 'lucide-react';
 
 const CHALLENGE_OPTIONS = [
   "Commuter student balancing work and campus recruitment",
@@ -27,6 +27,7 @@ const SCHOOL_OPTIONS = [
 ];
 
 export default function ProfileReview({ initialData, onConfirm, onBack, isLoading }) {
+  const [newSkillInput, setNewSkillInput] = useState('');
   const [profile, setProfile] = useState({
     name: initialData?.extracted_name || initialData?.name || "Student Applicant",
     school: initialData?.school || "Georgia State University",
@@ -39,6 +40,41 @@ export default function ProfileReview({ initialData, onConfirm, onBack, isLoadin
     challenges: initialData?.challenges || [CHALLENGE_OPTIONS[0], CHALLENGE_OPTIONS[2]],
     skills: initialData?.skills || ["Python", "Java", "Git", "Problem Solving"]
   });
+
+  // Keep state synchronized whenever a new resume is parsed or sample is selected
+  useEffect(() => {
+    if (initialData) {
+      setProfile({
+        name: initialData.extracted_name || initialData.name || "Student Applicant",
+        school: initialData.school || "Georgia State University",
+        major: initialData.major || "Computer Science",
+        year_standing: initialData.year_standing || "Sophomore",
+        grad_year: initialData.grad_year || 2027,
+        target_role: initialData.target_role || "Software Engineering Intern",
+        goals: initialData.goals || "Optimize my resume with quantifiable impact, practice coding interviews, and land sophomore summer tech internship.",
+        max_budget: 0,
+        challenges: initialData.challenges && initialData.challenges.length > 0 ? initialData.challenges : [CHALLENGE_OPTIONS[0], CHALLENGE_OPTIONS[2]],
+        skills: initialData.skills && initialData.skills.length > 0 ? initialData.skills : ["Python", "Java", "Git", "Problem Solving"],
+        raw_preview: initialData.raw_preview || "",
+        file_name: initialData.file_name || ""
+      });
+    }
+  }, [initialData]);
+
+  const addSkill = () => {
+    const trimmed = newSkillInput.trim();
+    if (trimmed && !profile.skills.includes(trimmed)) {
+      setProfile({ ...profile, skills: [...profile.skills, trimmed] });
+      setNewSkillInput('');
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    setProfile({
+      ...profile,
+      skills: profile.skills.filter((s) => s !== skillToRemove)
+    });
+  };
 
   const toggleChallenge = (ch) => {
     if (profile.challenges.includes(ch)) {
@@ -71,19 +107,46 @@ export default function ProfileReview({ initialData, onConfirm, onBack, isLoadin
       </button>
 
       <div className="glass-panel" style={{ padding: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '0.82rem', fontWeight: 700 }}>
-              <Check size={16} /> Resume Analyzed Successfully
+              <Check size={16} /> Resume Parsed & Analyzed Successfully
             </div>
             <h2 style={{ fontSize: '1.6rem', marginTop: '4px' }}>Confirm Your Profile & Goals</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Confirm your university and focus areas so our AI pairs you with alumni from your school.
+              We extracted your university, standing, and skills from your resume. Review and edit before matching.
             </p>
           </div>
           <span className="badge badge-school" style={{ padding: '6px 14px', fontSize: '0.85rem' }}>
             <GraduationCap size={16} /> {profile.school}
           </span>
+        </div>
+
+        {/* AI Extracted Resume Summary Banner */}
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.08)',
+          border: '1px solid rgba(16, 185, 129, 0.25)',
+          borderRadius: '10px',
+          padding: '12px 16px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '8px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={16} color="#10b981" />
+            <span style={{ fontSize: '0.84rem', color: '#6ee7b7', fontWeight: 600 }}>
+              AI Parsed: <strong>{profile.name}</strong> • <strong>{profile.school}</strong> ({profile.major})
+            </span>
+          </div>
+          {profile.file_name && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              <FileText size={14} color="#38bdf8" />
+              <span>Source: <strong style={{ color: '#cbd5e1' }}>{profile.file_name}</strong></span>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -202,6 +265,90 @@ export default function ProfileReview({ initialData, onConfirm, onBack, isLoadin
                 <span className="badge badge-match" style={{ padding: '6px 14px', fontSize: '0.85rem' }}>
                   Free Access Enabled
                 </span>
+              </div>
+            </div>
+
+            {/* Extracted Skills & Technologies */}
+            <div className="form-group full-width">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <Code2 size={16} color="#10b981" /> Skills Extracted from Your Resume ({profile.skills.length})
+                </label>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Click × to remove, or type new tools below
+                </span>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                padding: '12px',
+                borderRadius: '10px',
+                background: 'rgba(15, 23, 42, 0.5)',
+                border: '1px solid var(--border-subtle)',
+                marginBottom: '10px'
+              }}>
+                {profile.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      color: '#bae6fd',
+                      fontSize: '0.84rem',
+                      fontWeight: 500
+                    }}
+                  >
+                    <span>{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      title="Remove skill"
+                    >
+                      <X size={13} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  style={{ flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                  placeholder="Add another skill (e.g. Docker, TypeScript, PyTorch, Figma)..."
+                  value={newSkillInput}
+                  onChange={(e) => setNewSkillInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addSkill();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={addSkill}
+                >
+                  <Plus size={15} /> Add Skill
+                </button>
               </div>
             </div>
 

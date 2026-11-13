@@ -127,23 +127,6 @@ export default function App() {
   const handleAuthSuccess = (user) => {
     setCurrentUser(user);
     fetchBookings(user);
-    if (!studentProfile) {
-      setStudentProfile({
-        name: user.name,
-        school: user.school || "Georgia State University",
-        major: "Computer Science",
-        year_standing: "Sophomore",
-        grad_year: 2027,
-        target_role: "Software Engineering Intern",
-        goals: "Connect with alumni mentors from my university for resume roasts and technical interview preparation.",
-        max_budget: 0,
-        challenges: [
-          "Commuter student balancing work and campus recruitment",
-          "First-generation college student with no industry connections"
-        ],
-        skills: ["Python", "Java", "Problem Solving", "Git"]
-      });
-    }
   };
 
   const handleLogout = () => {
@@ -221,6 +204,7 @@ export default function App() {
 
             {currentStep === 2 && (
               <ProfileReview
+                key={studentProfile?.id || studentProfile?.file_name || studentProfile?.name || 'profile-review'}
                 initialData={studentProfile}
                 onConfirm={handleProfileConfirm}
                 onBack={() => setCurrentStep(1)}

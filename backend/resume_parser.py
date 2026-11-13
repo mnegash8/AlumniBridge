@@ -111,6 +111,18 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
 def parse_resume_text(text: str) -> Dict[str, Any]:
     lower_text = text.lower()
     
+    # 0. Extract Candidate Name from top lines
+    extracted_name = "Student Applicant"
+    clean_lines = [l.strip() for l in text.split("\n") if l.strip()]
+    for line in clean_lines[:6]:
+        words = line.split()
+        if 2 <= len(words) <= 4 and len(line) <= 35:
+            lower_l = line.lower()
+            if not any(token in lower_l for token in ["@", "http", "www", "resume", "curriculum", "education", "experience", "phone", "email", ".com", ".edu", "|", ":", "github", "linkedin"]):
+                if not any(char.isdigit() for char in line):
+                    extracted_name = line.strip().title()
+                    break
+
     # 1. School detection
     detected_school = "Georgia State University"
     for school in KNOWN_SCHOOLS:
@@ -192,7 +204,8 @@ def parse_resume_text(text: str) -> Dict[str, Any]:
     ]
 
     return {
-        "extracted_name": "Student Applicant",
+        "extracted_name": extracted_name,
+        "name": extracted_name,
         "school": detected_school,
         "major": detected_major,
         "year_standing": detected_year,
