@@ -36,10 +36,13 @@ export default function App() {
   const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch initial mentors & bookings
+  // Fetch initial mentors & bookings and prompt login if not authenticated
   useEffect(() => {
     fetchMentors();
     fetchBookings();
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+    }
   }, []);
 
   const fetchMentors = async () => {

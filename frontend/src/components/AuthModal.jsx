@@ -13,7 +13,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [customEmail, setCustomEmail] = useState('');
 
   // Google Sign-In specific states
-  const [googleStep, setGoogleStep] = useState('chooser'); // 'chooser' | 'custom_email' | 'password'
+  const [googleStep, setGoogleStep] = useState('custom_email'); // 'custom_email' | 'password' | 'chooser'
   const [googleCustomEmail, setGoogleCustomEmail] = useState('');
   const [googlePassword, setGooglePassword] = useState('');
   const [activeGoogleUser, setActiveGoogleUser] = useState({
@@ -31,13 +31,23 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   // Trigger OAuth flow
   const startOAuthFlow = (provider) => {
     if (provider === 'google') {
-      // For Google, render authentic Google/Gmail sign in UI directly
-      // Avoid window.open to accounts.google.com which redirects to myaccount.google.com
-      setGoogleStep('chooser');
-      setActiveGoogleUser({
-        name: 'Mohammed Negash',
-        email: 'mohammednnegash@gmail.com'
-      });
+      // Open the official Google/Gmail sign-in prompt window
+      const width = 500;
+      const height = 650;
+      const left = window.screenX + Math.max(0, (window.outerWidth - width) / 2);
+      const top = window.screenY + Math.max(0, (window.outerHeight - height) / 2.5);
+      try {
+        const googleUrl = 'https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&service=mail&flowName=GlifWebSignIn&flowEntry=ServiceLogin';
+        window.open(
+          googleUrl,
+          'google_login_window',
+          `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes,scrollbars=yes`
+        );
+      } catch (err) {
+        console.warn('Popup blocked, continuing in modal', err);
+      }
+
+      setGoogleStep('custom_email');
       setGooglePassword('');
       setGoogleCustomEmail('');
     } else if (provider === 'github') {
@@ -398,9 +408,52 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                   </div>
                 </div>
 
-                <p style={{ fontSize: '0.78rem', color: '#9aa0a6', lineHeight: 1.5, marginBottom: '24px' }}>
+                <p style={{ fontSize: '0.78rem', color: '#9aa0a6', lineHeight: 1.5, marginBottom: '16px' }}>
                   Not your computer? Use Guest mode to sign in privately.
                 </p>
+
+                {/* 1-Click Fast Demo Option */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #3c4043',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    cursor: 'pointer',
+                    marginBottom: '20px'
+                  }}
+                  onClick={() => {
+                    const user = { name: 'Mohammed Negash', email: 'mohammednnegash@gmail.com' };
+                    handleGoogleSubmit(user);
+                  }}
+                >
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    background: '#7c3aed',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.85rem',
+                    fontWeight: 600
+                  }}>
+                    M
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'left' }}>
+                    <div style={{ fontSize: '0.82rem', color: '#e8eaed', fontWeight: 500 }}>
+                      Quick 1-Click: Mohammed Negash
+                    </div>
+                    <div style={{ fontSize: '0.74rem', color: '#9aa0a6' }}>
+                      mohammednnegash@gmail.com
+                    </div>
+                  </div>
+                  <ChevronRight size={15} color="#9aa0a6" />
+                </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <button
@@ -414,9 +467,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                       cursor: 'pointer',
                       padding: '8px 12px'
                     }}
-                    onClick={() => setGoogleStep('chooser')}
+                    onClick={() => setOauthDialog(null)}
                   >
-                    Back
+                    Cancel
                   </button>
                   <button
                     type="button"
