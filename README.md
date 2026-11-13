@@ -13,7 +13,7 @@
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 1. ** PDF Résumé Parsing with `pypdf`**
    - Automatically extracts university, coursework, technical skills, standing (Freshman/Sophomore), and stated career goals from uploaded `.pdf` documents.
