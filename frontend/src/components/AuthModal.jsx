@@ -179,7 +179,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="Mohammed Negash"
+                  placeholder="e.g. Alex Johnson"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -193,7 +193,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="Georgia State University"
+                  placeholder="e.g. Georgia State University"
                   value={school}
                   onChange={(e) => setSchool(e.target.value)}
                   required
@@ -209,7 +209,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <input
               type="text"
               className="form-input"
-              placeholder={authMode === 'signup' ? 'Choose a username (e.g. mnegash)' : 'Enter your username'}
+              placeholder={authMode === 'signup' ? 'Choose a username (e.g. alex2026)' : 'Enter your username'}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
