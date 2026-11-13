@@ -139,12 +139,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 <Shield size={28} />
               </div>
               <h2 style={{ fontSize: '1.4rem' }}>
-                {oauthDialog.provider === 'google' && 'Google OAuth 2.0 Sign In'}
-                {oauthDialog.provider === 'github' && 'GitHub OAuth 2.0 Sign In'}
+                {oauthDialog.provider === 'google' && 'Sign In with Google'}
+                {oauthDialog.provider === 'github' && 'Sign In with GitHub'}
                 {oauthDialog.provider === 'university_sso' && 'University Single Sign-On (SSO)'}
               </h2>
               <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                <strong>AlumniBridge</strong> is requesting OAuth 2.0 authorization to link your student profile.
+                <strong>AlumniBridge</strong> is requesting permission to link your student profile.
               </p>
             </div>
 
@@ -157,7 +157,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               marginBottom: '20px'
             }}>
               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
-                Requested OAuth 2.0 Scopes:
+                Permissions Requested:
               </div>
               <ul style={{ listStyle: 'none', fontSize: '0.82rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -260,7 +260,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 disabled={oauthDialog.step === 'authorizing'}
                 style={{ padding: '10px 24px' }}
               >
-                {oauthDialog.step === 'authorizing' ? 'Verifying OAuth 2.0...' : 'Authorize & Sign In'}
+                {oauthDialog.step === 'authorizing' ? 'Signing in...' : 'Continue & Sign In'}
               </button>
             </div>
           </div>

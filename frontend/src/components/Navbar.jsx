@@ -107,7 +107,7 @@ export default function Navbar({
               onClick={onOpenAuthModal}
             >
               <LogIn size={15} />
-              <span>Log In (OAuth 2.0)</span>
+              <span>Log In</span>
             </button>
           )}
 
