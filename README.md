@@ -1,4 +1,4 @@
-# 🌉 AlumniBridge
+# AlumniBridge
 
 > **AI-powered mentorship platform connecting first- and second-year college students with alumni who have been where they are.**
 
@@ -13,23 +13,23 @@
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-1. **📄 PDF Résumé Parsing with `pypdf`**
+1. ** PDF Résumé Parsing with `pypdf`**
    - Automatically extracts university, coursework, technical skills, standing (Freshman/Sophomore), and stated career goals from uploaded `.pdf` documents.
-2. **🧠 AI Matching & Empathy Reasoning Engine**
+2. ** AI Matching & Empathy Reasoning Engine**
    - Scores candidates across school affinity, career trajectory, and shared hurdles.
    - Explains *why* each mentor is a match (e.g. overcoming low sophomore GPA, commuting while working, non-target recruitment).
-3. **🐾 Georgia State University (GSU) & Top Feeder Schools Supported**
+3. ** Georgia State University (GSU) & Top Feeder Schools Supported**
    - Features 14 realistic alumni mentors spanning **Google, Mailchimp, Deloitte, Blackstone, Anthropic, Stripe, Jane Street, McKinsey, and Spotify**.
-4. **🎁 100% Free Outcome-Focused Sessions**
+4. ** 100% Free Outcome-Focused Sessions**
    - Compare sessions like *Panther Résumé Roast*, *Internship Gameplan*, or *Mock Technical Screens* ($0 / Free).
-5. **📋 AI Session Prep Toolkit**
+5. ** AI Session Prep Toolkit**
    - Generates 3 tailored questions specifically customized to the mentor’s background for the student to ask on the call.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
                                   ┌───────────────────────────────┐
@@ -58,7 +58,7 @@
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### 1. Start the Backend API (FastAPI)
 ```bash
@@ -80,7 +80,7 @@ Web app runs at: `http://localhost:5173`
 
 ---
 
-## 👥 Team & Authors
+## Team & Authors
 
 - **Mohammed Negash**
 - **Roger Guiberto**
