@@ -70,6 +70,7 @@ class BookingRequest(BaseModel):
     student_goals: Optional[str] = ""
     student_notes: Optional[str] = ""
     username: Optional[str] = None
+    session_format: Optional[str] = "LIVE_CALL"
 
 @app.get("/api/health")
 def health_check():
@@ -175,6 +176,31 @@ def book_mentor_session(payload: BookingRequest):
         "max_budget": selected_service["price"]
     }, mentor)
     
+    session_format = payload.session_format or "LIVE_CALL"
+    async_feedback = None
+    if session_format == "ASYNC_REVIEW":
+        async_feedback = {
+            "status": "COMPLETED",
+            "audio_duration": "1:42",
+            "audio_note_title": f"Voice Note from {mentor['name']} ({mentor['company']})",
+            "coach_summary": f"Hi {payload.student_name}! I reviewed your resume and questions for {selected_service['title']}. Your background is great, but your resume bullets need stronger quantifiable metrics using the Google X-Y-Z formula to stand out to recruiters at {mentor['company']}.",
+            "bullet_rewrites": [
+                {
+                    "section": "Project Bullet Optimization",
+                    "original": "Built a web app for students using React and Python.",
+                    "suggestion": "Engineered full-stack web application using React and FastAPI, reducing search latency by 40% for 500+ student profiles.",
+                    "mentor_tip": "Always quantify the result [Y] and the methodology [Z]!"
+                },
+                {
+                    "section": "Technical Skills Grouping",
+                    "original": "Skills: Python, Java, SQL, HTML, CSS",
+                    "suggestion": "Languages: Python, Java, SQL | Tools: Git, Docker, REST APIs, SQLite",
+                    "mentor_tip": f"Recruiters at {mentor['company']} prioritize tools like Git and REST APIs over basic styling."
+                }
+            ],
+            "recommended_next_step": "Implement these bullet rewrites on your master PDF and submit for summer sophomore internship cycles."
+        }
+
     booking_record = {
         "id": booking_id,
         "username": payload.username.strip().lower() if payload.username else None,
@@ -187,12 +213,14 @@ def book_mentor_session(payload: BookingRequest):
         "service_id": selected_service["id"],
         "service_title": selected_service["title"],
         "service_price": selected_service["price"],
-        "session_date": payload.session_date,
-        "session_time": payload.session_time,
+        "session_date": payload.session_date if session_format == "LIVE_CALL" else "Async Review (Within 48h)",
+        "session_time": payload.session_time if session_format == "LIVE_CALL" else "No-Schedule Voice & Notes",
         "student_goals": payload.student_goals,
         "student_notes": payload.student_notes,
         "payment_status": "PAID_CONFIRMED (Simulated $0.00 Demo)",
-        "prep_questions": match_info["prep_questions"]
+        "prep_questions": match_info["prep_questions"],
+        "session_format": session_format,
+        "async_feedback": async_feedback
     }
     
     saved = create_booking(booking_record)

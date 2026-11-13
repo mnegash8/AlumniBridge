@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Sparkles, User, GraduationCap, CheckCircle2, Copy, Check, Download, ExternalLink, Video, Play, Pause, Mic, Zap, FileText } from 'lucide-react';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
 export default function BookingsView({ bookings = [], onFindMentors, currentUser }) {
   const [copiedQuestion, setCopiedQuestion] = useState(null);
+  const [playingAudioId, setPlayingAudioId] = useState(null);
+
+  const toggleAudioPlay = (id) => {
+    setPlayingAudioId((prev) => (prev === id ? null : id));
+  };
 
   const copyText = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -84,9 +89,26 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
                       @{b.username}
                     </span>
                   )}
-                  <span className="badge badge-match">
-                    <CheckCircle2 size={12} /> {b.payment_status}
-                  </span>
+                  {b.session_format === 'ASYNC_REVIEW' ? (
+                    <span style={{
+                      background: 'rgba(2, 132, 199, 0.15)',
+                      color: '#38bdf8',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Zap size={11} /> ⚡ No-Schedule Async
+                    </span>
+                  ) : (
+                    <span className="badge badge-match">
+                      <CheckCircle2 size={12} /> {b.payment_status}
+                    </span>
+                  )}
                 </div>
                 <h3 style={{ fontSize: '1.25rem', marginTop: '6px' }}>{b.service_title}</h3>
                 <div style={{ color: '#a5b4fc', fontSize: '0.9rem', fontWeight: 600, marginTop: '2px' }}>
@@ -121,83 +143,206 @@ export default function BookingsView({ bookings = [], onFindMentors, currentUser
               <span><strong>School:</strong> {b.student_school}</span>
             </div>
 
-            {/* Quick Calendar & Room Action Bar */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              flexWrap: 'wrap',
-              marginBottom: '14px'
-            }}>
-              <a
-                href={generateGoogleCalendarUrl({
-                  mentorName: b.mentor_name,
-                  serviceTitle: b.service_title,
-                  sessionDate: b.session_date,
-                  sessionTime: b.session_time,
-                  prepQuestions: b.prep_questions,
-                  bookingId: b.id
-                })}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '0.8rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#38bdf8',
-                  borderColor: 'rgba(56, 189, 248, 0.3)',
-                  textDecoration: 'none'
-                }}
-              >
-                <ExternalLink size={13} />
-                <span>Google Calendar</span>
-              </a>
+            {/* Format-Specific Action or Async Review Display */}
+            {b.session_format === 'ASYNC_REVIEW' ? (
+              <div style={{ marginTop: '14px' }}>
+                {/* Voice Note Player */}
+                <div style={{
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  borderRadius: '12px',
+                  padding: '16px 18px',
+                  marginBottom: '14px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.86rem', fontWeight: 700, color: '#f8fafc' }}>
+                      <Mic size={16} color="#38bdf8" />
+                      <span>{b.async_feedback?.audio_note_title || `Voice Note Feedback from ${b.mentor_name}`}</span>
+                    </div>
+                    <span style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle2 size={12} /> Feedback Ready
+                    </span>
+                  </div>
 
-              <button
-                type="button"
-                className="btn-secondary"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '0.8rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-                onClick={() => downloadIcsFile({
-                  mentorName: b.mentor_name,
-                  serviceTitle: b.service_title,
-                  sessionDate: b.session_date,
-                  sessionTime: b.session_time,
-                  prepQuestions: b.prep_questions,
-                  bookingId: b.id
-                })}
-              >
-                <Download size={13} />
-                <span>Download .ics</span>
-              </button>
+                  {/* Audio Waveform Interactive Player */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                      onClick={() => toggleAudioPlay(b.id)}
+                      title={playingAudioId === b.id ? "Pause Voice Note" : "Play Voice Note"}
+                    >
+                      {playingAudioId === b.id ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: '2px' }} />}
+                    </button>
 
-              <a
-                href="https://meet.google.com/ab-mentorship"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-emerald"
-                style={{
-                  padding: '6px 14px',
-                  fontSize: '0.8rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  textDecoration: 'none',
-                  marginLeft: 'auto'
-                }}
-              >
-                <Video size={13} />
-                <span>Join Virtual Room</span>
-              </a>
-            </div>
+                    {/* Waveform graphic bars */}
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '3px', height: '32px' }}>
+                      {[10, 22, 16, 28, 14, 20, 26, 12, 18, 24, 30, 16, 22, 14, 28, 18, 22, 12, 24, 28, 16, 20, 14, 22, 26].map((h, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            flex: 1,
+                            height: playingAudioId === b.id ? `${Math.max(6, (h + ((i % 4) * 3)))}px` : `${h}px`,
+                            background: playingAudioId === b.id && i < 16 ? '#38bdf8' : 'rgba(255, 255, 255, 0.22)',
+                            borderRadius: '2px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
+                      {playingAudioId === b.id ? '0:42 / 1:42' : (b.async_feedback?.audio_duration || '1:42')}
+                    </div>
+                  </div>
+
+                  {/* Summary Transcript */}
+                  <p style={{
+                    fontSize: '0.84rem',
+                    color: '#e2e8f0',
+                    marginTop: '12px',
+                    lineHeight: 1.5,
+                    padding: '10px 14px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '8px',
+                    borderLeft: '3px solid #38bdf8'
+                  }}>
+                    💬 <strong>Mentor Advice:</strong> “{b.async_feedback?.coach_summary || 'Reviewed your resume bullets. Solid technical foundation, but your quantified impact needs to follow the Google X-Y-Z formula to pass ATS screens.'}”
+                  </p>
+                </div>
+
+                {/* Line-by-Line Bullet Rewrites */}
+                {b.async_feedback?.bullet_rewrites && b.async_feedback.bullet_rewrites.length > 0 && (
+                  <div style={{
+                    background: 'rgba(15, 23, 42, 0.65)',
+                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                    borderRadius: '12px',
+                    padding: '16px 18px',
+                    marginBottom: '14px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.86rem', fontWeight: 700, color: '#a5b4fc', marginBottom: '12px' }}>
+                      <FileText size={16} />
+                      <span>Alumni Line-by-Line Bullet Rewrites</span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {b.async_feedback.bullet_rewrites.map((rw, rIdx) => (
+                        <div
+                          key={rIdx}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            padding: '12px'
+                          }}
+                        >
+                          <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '6px' }}>
+                            📌 {rw.section}
+                          </div>
+                          <div style={{ fontSize: '0.82rem', color: '#f87171', marginBottom: '4px', textDecoration: 'line-through' }}>
+                            ❌ {rw.original}
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: '#4ade80', fontWeight: 600, marginBottom: '6px' }}>
+                            ✅ {rw.suggestion}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                            💡 <strong>Mentor Tip:</strong> {rw.mentor_tip}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Quick Calendar & Room Action Bar for Live Calls */
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                flexWrap: 'wrap',
+                marginBottom: '14px'
+              }}>
+                <a
+                  href={generateGoogleCalendarUrl({
+                    mentorName: b.mentor_name,
+                    serviceTitle: b.service_title,
+                    sessionDate: b.session_date,
+                    sessionTime: b.session_time,
+                    prepQuestions: b.prep_questions,
+                    bookingId: b.id
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.8rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#38bdf8',
+                    borderColor: 'rgba(56, 189, 248, 0.3)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <ExternalLink size={13} />
+                  <span>Google Calendar</span>
+                </a>
+
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.8rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                  onClick={() => downloadIcsFile({
+                    mentorName: b.mentor_name,
+                    serviceTitle: b.service_title,
+                    sessionDate: b.session_date,
+                    sessionTime: b.session_time,
+                    prepQuestions: b.prep_questions,
+                    bookingId: b.id
+                  })}
+                >
+                  <Download size={13} />
+                  <span>Download .ics</span>
+                </button>
+
+                <a
+                  href="https://meet.google.com/ab-mentorship"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-emerald"
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: '0.8rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    textDecoration: 'none',
+                    marginLeft: 'auto'
+                  }}
+                >
+                  <Video size={13} />
+                  <span>Join Virtual Room</span>
+                </a>
+              </div>
+            )}
 
             {/* AI Session Prep Questions for this booking */}
             {b.prep_questions && b.prep_questions.length > 0 && (

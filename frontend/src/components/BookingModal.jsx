@@ -12,7 +12,11 @@ import {
   Award,
   ArrowRight,
   Download,
-  ExternalLink
+  ExternalLink,
+  Video,
+  Zap,
+  Mic,
+  FileText
 } from 'lucide-react';
 import { generateGoogleCalendarUrl, downloadIcsFile } from '../utils/calendar';
 
@@ -35,6 +39,7 @@ export default function BookingModal({
 
   const [selectedService, setSelectedService] = useState(services[0] || null);
   const [selectedSlot, setSelectedSlot] = useState(slots[0] || null);
+  const [sessionFormat, setSessionFormat] = useState('LIVE_CALL'); // 'LIVE_CALL' | 'ASYNC_REVIEW'
   const [studentNotes, setStudentNotes] = useState('');
   const [studentEmail, setStudentEmail] = useState(
     currentUser?.email || studentProfile?.email || (currentUser?.name ? `${currentUser.name.toLowerCase().replace(/\s+/g, '.')}@gmail.com` : 'student@gmail.com')
@@ -49,6 +54,7 @@ export default function BookingModal({
     if (isOpen) {
       setBookingConfirmed(null);
       setIsSubmitting(false);
+      setSessionFormat('LIVE_CALL');
       setSelectedService(services[0] || null);
       setSelectedSlot(slots[0] || null);
       setStudentNotes('');
@@ -61,7 +67,8 @@ export default function BookingModal({
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedService || !selectedSlot) return;
+    if (!selectedService) return;
+    if (sessionFormat === 'LIVE_CALL' && !selectedSlot) return;
     setIsSubmitting(true);
 
     const payload = {
@@ -71,11 +78,12 @@ export default function BookingModal({
       student_email: studentEmail || currentUser?.email || "student@gmail.com",
       student_school: currentUser?.school || studentProfile?.school || mentor.school,
       student_major: studentProfile?.major || mentor.major,
-      session_date: selectedSlot.date,
-      session_time: selectedSlot.time,
+      session_date: sessionFormat === 'LIVE_CALL' ? selectedSlot?.date : "Within 48h",
+      session_time: sessionFormat === 'LIVE_CALL' ? selectedSlot?.time : "Flexible Async",
       student_goals: studentProfile?.target_role || studentProfile?.goals || "",
       student_notes: studentNotes,
-      username: currentUser?.username || undefined
+      username: currentUser?.username || undefined,
+      session_format: sessionFormat
     };
 
     try {
@@ -131,11 +139,69 @@ export default function BookingModal({
                 }}
               />
               <div>
-                <h2 style={{ fontSize: '1.4rem' }}>Book Free Mentorship Session with {mentor.name}</h2>
+                <h2 style={{ fontSize: '1.4rem' }}>Mentorship with {mentor.name}</h2>
                 <div style={{ fontSize: '0.85rem', color: '#38bdf8' }}>
                   {mentor.role} @ {mentor.company} • {mentor.school} '{mentor.graduation_year?.toString().slice(-2)}
                 </div>
               </div>
+            </div>
+
+            {/* Format Selector: Live Call vs No-Schedule Async */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '8px',
+              padding: '4px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderRadius: '10px',
+              marginBottom: '20px',
+              border: '1px solid var(--border-subtle)'
+            }}>
+              <button
+                type="button"
+                onClick={() => setSessionFormat('LIVE_CALL')}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: sessionFormat === 'LIVE_CALL' ? 'var(--primary)' : 'transparent',
+                  color: sessionFormat === 'LIVE_CALL' ? '#ffffff' : 'var(--text-muted)',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Video size={15} />
+                <span>Live 1-on-1 Call</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSessionFormat('ASYNC_REVIEW')}
+                style={{
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: sessionFormat === 'ASYNC_REVIEW' ? '#0284c7' : 'transparent',
+                  color: sessionFormat === 'ASYNC_REVIEW' ? '#ffffff' : 'var(--text-muted)',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Zap size={15} color={sessionFormat === 'ASYNC_REVIEW' ? '#38bdf8' : 'currentColor'} />
+                <span>⚡ No-Schedule Review</span>
+              </button>
             </div>
 
             {/* Step 1: Compare Free Services */}
@@ -189,28 +255,56 @@ export default function BookingModal({
               </div>
             </div>
 
-            {/* Step 2: Available Time Slot */}
-            <div style={{ marginTop: '20px' }}>
-              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>
-                2. Select an Available Time Slot
+            {/* Step 2: Available Time Slot OR Async Guarantee */}
+            {sessionFormat === 'LIVE_CALL' ? (
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>
+                  2. Select an Available Time Slot
+                </div>
+                <div className="slots-grid">
+                  {slots.map((s, idx) => {
+                    const isSelected = selectedSlot?.date === s.date && selectedSlot?.time === s.time;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`slot-btn ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedSlot(s)}
+                      >
+                        <div>📅 {s.date}</div>
+                        <div style={{ marginTop: '2px', fontWeight: 700 }}>{s.time}</div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="slots-grid">
-                {slots.map((s, idx) => {
-                  const isSelected = selectedSlot?.date === s.date && selectedSlot?.time === s.time;
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`slot-btn ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedSlot(s)}
-                    >
-                      <div>📅 {s.date}</div>
-                      <div style={{ marginTop: '2px', fontWeight: 700 }}>{s.time}</div>
-                    </button>
-                  );
-                })}
+            ) : (
+              <div style={{
+                marginTop: '18px',
+                padding: '16px',
+                background: 'rgba(2, 132, 199, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '12px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#38bdf8' }}>
+                  <Zap size={18} />
+                  <span>No Calendar Coordination Required</span>
+                </div>
+                <p style={{ fontSize: '0.83rem', color: '#cbd5e1', marginTop: '6px', lineHeight: 1.5 }}>
+                  Busy alumni review your resume or essay whenever they have 5 minutes. {mentor.name} will record a voice note and provide line-by-line bullet rewrites.
+                </p>
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
+                  marginTop: '10px',
+                  fontSize: '0.78rem',
+                  color: '#94a3b8'
+                }}>
+                  <span>⏱️ <strong>Turnaround:</strong> Within 48 hours</span>
+                  <span>🎧 <strong>Deliverable:</strong> Voice Note + Annotated Rewrites</span>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Step 3: Student Details & Notes */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '14px' }}>
@@ -291,7 +385,9 @@ export default function BookingModal({
                 <CheckCircle2 size={18} />
                 <span>
                   {isSubmitting
-                    ? 'Confirming & Generating AI Prep Sheet...'
+                    ? 'Submitting...'
+                    : sessionFormat === 'ASYNC_REVIEW'
+                    ? `Request Free Async Review from ${mentor.name}`
                     : `Confirm Free Mentorship Session with ${mentor.name}`}
                 </span>
               </button>
@@ -385,79 +481,109 @@ export default function BookingModal({
               </div>
             </div>
 
-            {/* Sync to Calendar Section */}
-            <div style={{
-              marginTop: '18px',
-              padding: '16px 20px',
-              background: 'rgba(99, 102, 241, 0.08)',
-              border: '1px solid rgba(99, 102, 241, 0.25)',
-              borderRadius: '12px',
-              textAlign: 'left'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>
-                  <Calendar size={18} color="#818cf8" />
-                  <span>Add to Your Calendar</span>
+            {/* Sync to Calendar OR Async Confirmation Section */}
+            {bookingConfirmed.booking?.session_format === 'ASYNC_REVIEW' ? (
+              <div style={{
+                marginTop: '18px',
+                padding: '16px 20px',
+                background: 'rgba(2, 132, 199, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '12px',
+                textAlign: 'left'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.92rem', fontWeight: 700, color: '#38bdf8' }}>
+                  <Zap size={18} />
+                  <span>No-Schedule Review Queued</span>
                 </div>
-                <span style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 600 }}>
-                  Includes Google Meet Link
-                </span>
+                <p style={{ fontSize: '0.84rem', color: '#cbd5e1', marginTop: '6px', lineHeight: 1.5 }}>
+                  {mentor.name} has received your request. Feedback containing an audio voice note and annotated bullet rewrites will be available directly on your <strong>My Bookings</strong> dashboard.
+                </p>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginTop: '10px',
+                  fontSize: '0.78rem',
+                  color: '#6ee7b7'
+                }}>
+                  <CheckCircle2 size={14} />
+                  <span>Turnaround Guarantee: Feedback delivered within 48 hours</span>
+                </div>
               </div>
+            ) : (
+              <div style={{
+                marginTop: '18px',
+                padding: '16px 20px',
+                background: 'rgba(99, 102, 241, 0.08)',
+                border: '1px solid rgba(99, 102, 241, 0.25)',
+                borderRadius: '12px',
+                textAlign: 'left'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 700, color: '#f8fafc' }}>
+                    <Calendar size={18} color="#818cf8" />
+                    <span>Add to Your Calendar</span>
+                  </div>
+                  <span style={{ fontSize: '0.74rem', color: '#38bdf8', fontWeight: 600 }}>
+                    Includes Google Meet Link
+                  </span>
+                </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <a
-                  href={generateGoogleCalendarUrl({
-                    mentorName: mentor.name,
-                    mentorCompany: mentor.company,
-                    serviceTitle: bookingConfirmed.service?.title,
-                    sessionDate: bookingConfirmed.booking?.session_date,
-                    sessionTime: bookingConfirmed.booking?.session_time,
-                    prepQuestions: bookingConfirmed.booking?.prep_questions,
-                    bookingId: bookingConfirmed.booking?.id
-                  })}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary"
-                  style={{
-                    padding: '10px 14px',
-                    fontSize: '0.84rem',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <ExternalLink size={15} />
-                  <span>Google Calendar</span>
-                </a>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <a
+                    href={generateGoogleCalendarUrl({
+                      mentorName: mentor.name,
+                      mentorCompany: mentor.company,
+                      serviceTitle: bookingConfirmed.service?.title,
+                      sessionDate: bookingConfirmed.booking?.session_date,
+                      sessionTime: bookingConfirmed.booking?.session_time,
+                      prepQuestions: bookingConfirmed.booking?.prep_questions,
+                      bookingId: bookingConfirmed.booking?.id
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary"
+                    style={{
+                      padding: '10px 14px',
+                      fontSize: '0.84rem',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <ExternalLink size={15} />
+                    <span>Google Calendar</span>
+                  </a>
 
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{
-                    padding: '10px 14px',
-                    fontSize: '0.84rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                  onClick={() => downloadIcsFile({
-                    mentorName: mentor.name,
-                    mentorCompany: mentor.company,
-                    serviceTitle: bookingConfirmed.service?.title,
-                    sessionDate: bookingConfirmed.booking?.session_date,
-                    sessionTime: bookingConfirmed.booking?.session_time,
-                    prepQuestions: bookingConfirmed.booking?.prep_questions,
-                    bookingId: bookingConfirmed.booking?.id
-                  })}
-                >
-                  <Download size={15} />
-                  <span>Download .ics</span>
-                </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{
+                      padding: '10px 14px',
+                      fontSize: '0.84rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                    onClick={() => downloadIcsFile({
+                      mentorName: mentor.name,
+                      mentorCompany: mentor.company,
+                      serviceTitle: bookingConfirmed.service?.title,
+                      sessionDate: bookingConfirmed.booking?.session_date,
+                      sessionTime: bookingConfirmed.booking?.session_time,
+                      prepQuestions: bookingConfirmed.booking?.prep_questions,
+                      bookingId: bookingConfirmed.booking?.id
+                    })}
+                  >
+                    <Download size={15} />
+                    <span>Download .ics</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             <div style={{ marginTop: '22px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
               <button className="btn-primary" onClick={handleModalClose}>

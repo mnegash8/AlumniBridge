@@ -32,6 +32,9 @@
    - Instant calendar integration with pre-filled Google Meet links, session deliverables, and AI prep questions.
 8. **👤 Account-Linked Mentorship Bookings**
    - Bookings are strictly tied to the logged-in student account with private dashboard access.
+9. **⚡ "No-Schedule" Async Audio & Bullet Reviews**
+   - Eliminates calendar coordination friction: busy alumni leave 90-second voice notes and line-by-line bullet rewrites whenever they have 5 minutes.
+   - Interactive waveform audio player and annotated before/after resume bullet diffs in "My Bookings".
 
 ---
 
