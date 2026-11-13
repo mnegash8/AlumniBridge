@@ -8,11 +8,9 @@ import BookingsView from './components/BookingsView';
 import JudgeModal from './components/JudgeModal';
 import AuthModal from './components/AuthModal';
 import { Sparkles, CheckCircle2, ChevronRight, GraduationCap } from 'lucide-react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import './App.css';
 
 const API_BASE = 'http://localhost:8000/api';
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1047648264826-sampleclientid.apps.googleusercontent.com';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('match'); // 'match' | 'explore' | 'bookings'
@@ -156,8 +154,7 @@ export default function App() {
   };
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <div className="app-container">
+    <div className="app-container">
       {/* Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -303,13 +300,12 @@ export default function App() {
         onSelectPreset={handleSelectPreset}
       />
 
-      {/* OAuth 2.0 Login & Signup Modal */}
+      {/* Login & Signup Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onAuthSuccess={handleAuthSuccess}
       />
     </div>
-    </GoogleOAuthProvider>
   );
 }
