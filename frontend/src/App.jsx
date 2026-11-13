@@ -5,7 +5,6 @@ import ProfileReview from './components/ProfileReview';
 import MentorList from './components/MentorList';
 import BookingModal from './components/BookingModal';
 import BookingsView from './components/BookingsView';
-import JudgeModal from './components/JudgeModal';
 import AuthModal from './components/AuthModal';
 import { Sparkles, CheckCircle2, ChevronRight, GraduationCap } from 'lucide-react';
 import './App.css';
@@ -33,7 +32,6 @@ export default function App() {
   const [bookings, setBookings] = useState([]);
   
   const [selectedMentorForBooking, setSelectedMentorForBooking] = useState(null);
-  const [isJudgeModalOpen, setIsJudgeModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch initial mentors & bookings and prompt login if not authenticated
@@ -157,7 +155,6 @@ export default function App() {
           setActiveTab(tab);
         }}
         bookingsCount={bookings.length}
-        onOpenJudgeModal={() => setIsJudgeModalOpen(true)}
         currentUser={currentUser}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
@@ -290,13 +287,6 @@ export default function App() {
         isOpen={!!selectedMentorForBooking}
         onClose={() => setSelectedMentorForBooking(null)}
         onBookingSuccess={handleBookingSuccess}
-      />
-
-      {/* Judge Pitch & Demo Modal */}
-      <JudgeModal
-        isOpen={isJudgeModalOpen}
-        onClose={() => setIsJudgeModalOpen(false)}
-        onSelectPreset={handleSelectPreset}
       />
 
       {/* Login & Signup Modal */}

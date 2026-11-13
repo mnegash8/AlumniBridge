@@ -1,11 +1,10 @@
 import React from 'react';
-import { GraduationCap, Users, Calendar, Sparkles, Award, LogIn, LogOut, User } from 'lucide-react';
+import { GraduationCap, Users, Calendar, Sparkles, LogIn, LogOut, User } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
   setActiveTab,
   bookingsCount,
-  onOpenJudgeModal,
   currentUser,
   onOpenAuthModal,
   onLogout
@@ -112,16 +111,6 @@ export default function Navbar({
               <span>Log In</span>
             </button>
           )}
-
-          <button
-            id="judge-pitch-btn"
-            className="btn-secondary"
-            style={{ padding: '8px 14px', fontSize: '0.85rem', borderColor: 'rgba(99, 102, 241, 0.4)' }}
-            onClick={onOpenJudgeModal}
-          >
-            <Award size={16} color="#818cf8" />
-            <span>Judge Pitch</span>
-          </button>
         </div>
       </div>
     </header>
